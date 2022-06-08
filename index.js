@@ -6,9 +6,13 @@ const BaseJson = require('./app/json/bgenerator/BaseJson.js');
 const FormJson = require('./app/json/bgenerator/FormJson.js');
 const ListJson = require('./app/json/bgenerator/ListJson.js');
 const CrudController = require('./app/controllers/bGen/CrudController.js');
+const CrudParentController = require('./app/controllers/bGen/CrudParentController.js');
+
 
 const BGenerator = {
-    bGeneratorRouter, bGenerator, jsonResponse, BaseRepository, BaseJson, FormJson, ListJson, CrudController
+    bGeneratorRouter, jsonResponse, BaseRepository, BaseJson, FormJson, ListJson, CrudController, CrudParentController,
+    bGenerator: bGenerator.bGenerator,
+    ns: bGenerator.ns
 }
 
 module.exports = BGenerator;
