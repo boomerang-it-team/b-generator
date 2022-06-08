@@ -11,6 +11,8 @@ class CrudController {
     user = null;
     config;
     repository;
+    parentRef;
+    objectRef;
 
     constructor(config) {
         this.config = config;
@@ -22,17 +24,19 @@ class CrudController {
 
     getIndex = async (req, res) => {
         this.withSkeleton = req.body.skeleton || true;
-        this.user = req.user;
-
         return await this.fetchList(req, res);
     }
 
     delete = async (req, res) => {
 
-        this.user = req.user;
-
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
         this.repository = abstractListConfigParser.bGeneratorRepository;
+
+        const policiesPassed = await this.checkDeletePolicies(req);
+        if(!policiesPassed){
+            return jsonResponse.send(res, [], "Access Denied", 403);
+        }
+
         await this.repository.delete(req.params.id);
 
         return await this.fetchList(req, res, "Item Deleted Successfully.")
@@ -41,10 +45,14 @@ class CrudController {
 
     load = async (req, res) => {
         const mode = req.body.action || 'view'; // view, edit, create
-        this.user = req.user;
 
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
         this.repository = abstractListConfigParser.bGeneratorRepository;
+
+        const policiesPassed = await this.checkLoadPolicies(req);
+        if(!policiesPassed){
+            return jsonResponse.send(res, [], "Access Denied", 403);
+        }
 
         let item;
         if (mode === 'edit' || mode === 'view') {
@@ -74,10 +82,15 @@ class CrudController {
 
     store = async (req, res) => {
         const mode = req.body.action;
-        this.user = req.user;
+
+        const policiesPassed = await this.checkStorePolicies(req);
+        if(!policiesPassed){
+            return jsonResponse.send(res, [], "Access Denied", 403);
+        }
 
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
         this.repository = abstractListConfigParser.bGeneratorRepository;
+        this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
         let formItems;
         if (mode === "update") {
@@ -113,6 +126,13 @@ class CrudController {
                         item[k] = input[k];
                     }
                 })
+
+                /* ---- FOR PARENT ---- */
+                if(this.objectRef){
+                    item[this.objectRef] = req.body[this.objectRef];
+                }
+                /* -------------------- */
+
                 await item.save()
             }else{ // create, save and add
                 let createItem = {};
@@ -121,6 +141,13 @@ class CrudController {
                         createItem[k] = input[k];
                     }
                 });
+
+                /* ---- FOR PARENT ---- */
+                if(this.objectRef){
+                    createItem[this.objectRef] = req.body[this.objectRef];
+                }
+                /* -------------------- */
+
                 item = await this.repository.create(createItem);
             }
 
@@ -217,8 +244,14 @@ class CrudController {
 
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
         this.repository = abstractListConfigParser.bGeneratorRepository;
+        this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
-        this.repository.applyCriteria(abstractListConfigParser.bGeneratorFields, abstractListConfigParser.bGeneratorFilterItems, filterCriteria, sort);
+        const policiesPassed = await this.checkIndexPolicies(req);
+        if(!policiesPassed){
+            return jsonResponse.send(res, [], "Access Denied", 403);
+        }
+
+        this.applyCriteria(req, abstractListConfigParser.bGeneratorFields, abstractListConfigParser.bGeneratorFilterItems, filterCriteria, sort);
 
         const page = req.body.page || 1;
         const limit = abstractListConfigParser.bGeneratorPerPage;
@@ -267,6 +300,10 @@ class CrudController {
         return null;
     }
 
+    applyCriteria = (req, bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort) => {
+        return this.repository.applyCriteria(bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort);
+    }
+
     postFetchList = async (req, items) => {
         return items;
     }
@@ -283,6 +320,21 @@ class CrudController {
         return item;
     }
 
+    checkIndexPolicies = async (req) => {
+        return true;
+    }
+
+    checkDeletePolicies = async (req) => {
+        return true;
+    }
+
+    checkLoadPolicies = async (req) => {
+        return true;
+    }
+
+    checkStorePolicies = async (req) => {
+        return true;
+    }
 }
 
 module.exports = CrudController;
