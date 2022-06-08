@@ -1,0 +1,24 @@
+{
+  "name": "b-generator",
+  "version": "1.0.2",
+  "description": "A simple and useful nodejs and express package to create admin panels",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "sequelize": "^6.20.1",
+    "Validator": "^1.1.4"
+  },
+  "keywords": [
+    "admin",
+    "admin-generator",
+    "b-generator",
+    "admin",
+    "panel",
+    "panel"
+  ],
+  "author": "Bardia Mazaheri",
+  "license": "ISC"
+}
