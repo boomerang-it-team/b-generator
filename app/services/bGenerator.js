@@ -10,9 +10,13 @@ class bGenerator {
     bGeneratorFields = {};
     bGeneratorFieldSets = {};
     bGeneratorModel;
+    bGeneratorParentModel;
+    bGeneratorParentRef = "id";
+    bGeneratorObjectRef;
     bGeneratorRepository;
     bGeneratorEntityManager = null;
     bGeneratorModelName;
+    bGeneratorParentModelName
     bGeneratorListTitle;
     bGeneratorListItems;
     bGeneratorListSort = null;
@@ -220,6 +224,28 @@ class bGenerator {
 
         const model_explode = this.bGeneratorParams[NS_MODEL].split("/");
         this.bGeneratorModelName = model_explode[model_explode.length - 1];
+
+
+        // get settings for admin generator parent
+        if(this.bGeneratorParams[NS_PARENT_MODEL]){
+
+            this.bGeneratorParentModel = require(process.env.BASE_APP_PATH + this.bGeneratorParams[NS_PARENT_MODEL]);
+
+            const model_explode = this.bGeneratorParams[NS_PARENT_MODEL].split("/");
+            this.bGeneratorParentModelName = model_explode[model_explode.length - 1];
+
+            if(this.bGeneratorParams[NS_PARENT_REF]){
+                this.bGeneratorParentRef = this.bGeneratorParams[NS_PARENT_REF];
+            }
+
+            if(!this.bGeneratorParams[NS_OBJECT_REF]) {
+                throw "AG Configuration: Child Related Key Is Not Defined.";
+            } else {
+                this.bGeneratorObjectRef = this.bGeneratorParams[NS_OBJECT_REF];
+            }
+        }
+        // ---------------------------------------
+
 
         // custom views folder
         if(!this.bGeneratorParams[NS_CUSTOM_VIEW]){
@@ -1722,7 +1748,7 @@ const NS_MODEL = 'model';
 const NS_REPOSITORY = 'repository';
 const NS_ENTITY_MANAGER = 'entityManager';
 const NS_THEME = 'theme';
-const NS_PARENT_CLASS = 'parent_class';
+const NS_PARENT_MODEL = 'parentModel';
 const NS_PARENT_REF = 'parentRef';
 const NS_OBJECT_REF = 'objectRef';
 const NS_LAYOUT = 'layout';
