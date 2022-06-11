@@ -30,6 +30,12 @@ $ pnpm add b-generator
 
 ## Usage
 
+### .env
+```dotenv
+BASE_APP_PATH=Full_path_of_project
+DATABASE_CONFIG_FILE=Path_of_sequelize_DB_initiator
+```
+
 ### Controller
 
 ```js
@@ -71,7 +77,7 @@ module.exports = new SampleRepository(SampleModel);
             "repository": "path_to_repository",
             "customView": "backoffice/simple"
     },
-    // you can use i18next for field labels
+
     "fields": [
         { "name": "sample_field_1", "label": "language:labels.sample_field_1" },
         { "name": "sample_field_2", "label": "Sample Field 2" }
@@ -143,7 +149,7 @@ module.exports = new SampleRepository(SampleModel);
 
 
 ```
-
+note: you can use i18next for field labels
 ## License
 
 [ISC](LICENSE)
