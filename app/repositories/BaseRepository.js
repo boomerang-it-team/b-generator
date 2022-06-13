@@ -34,7 +34,7 @@ class BaseRepository {
 
                 if (filterItem === filterCriterionKey) {
 
-                    if (!filterCriterionValue || filterCriterionValue.trim() === '') {
+                    if (!filterCriterionValue || ("" + filterCriterionValue).trim() === '') {
                         return;
                     }
 

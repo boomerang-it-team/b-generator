@@ -11,6 +11,7 @@ class CrudController {
     user = null;
     config;
     repository;
+    parentModel;
     parentRef;
     objectRef;
 
@@ -48,6 +49,7 @@ class CrudController {
 
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
         this.repository = abstractListConfigParser.bGeneratorRepository;
+        this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
         const policiesPassed = await this.checkLoadPolicies(req);
         if(!policiesPassed){
@@ -61,7 +63,19 @@ class CrudController {
         }
 
         if(mode === 'edit' || mode === 'create'){
-            const form = await abstractListConfigParser.form(req, item, null, {});
+
+            let parent = null;
+            if(this.objectRef){
+                this.parentModel = abstractListConfigParser.bGeneratorParentModel;
+                this.parentRef = abstractListConfigParser.bGeneratorParentRef;
+                parent = await this.parentModel.findOne({
+                    where: {
+                        [this.parentRef]: req.body[this.objectRef]
+                    }
+                })
+            }
+
+            const form = await abstractListConfigParser.form(req, item, parent, {});
 
             const jsonResult = new FormJson({
                 req,
@@ -177,7 +191,19 @@ class CrudController {
             item = await this.postStore(req, item, mode, forwardAction);
             item = await this.postFetchItem(req, item);
             const ni = forwardAction === 'create' ? null : item;
-            const config = await abstractListConfigParser.form(req, ni, null, []);
+
+            let parent = null;
+            if(this.objectRef){
+                this.parentModel = abstractListConfigParser.bGeneratorParentModel;
+                this.parentRef = abstractListConfigParser.bGeneratorParentRef;
+                parent = await this.parentModel.findOne({
+                    where: {
+                        [this.parentRef]: req.body[this.objectRef]
+                    }
+                })
+            }
+
+            const config = await abstractListConfigParser.form(req, ni, parent, []);
             const jsonResult = new FormJson({
                 req,
                 configParser: config,

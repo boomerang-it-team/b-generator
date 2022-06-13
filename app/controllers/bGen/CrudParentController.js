@@ -8,6 +8,10 @@ class CrudParentController extends CrudController {
     }
 
     checkIndexPolicies = async (req) => {
+        return await this.checkIndexPoliciesAction(req);
+    }
+
+    checkIndexPoliciesAction = async (req) => {
         if(!req.body[this.objectRef]){
             return false;
         }
@@ -15,6 +19,10 @@ class CrudParentController extends CrudController {
     }
 
     checkDeletePolicies = async (req) => {
+        return await this.checkDeletePoliciesAction(req);
+    }
+
+    checkDeletePoliciesAction = async (req) => {
 
         if(!req.body[this.objectRef]){
             return false;
@@ -30,6 +38,10 @@ class CrudParentController extends CrudController {
     }
 
     checkLoadPolicies = async (req) => {
+        return await this.checkLoadPoliciesAction(req);
+    }
+
+    checkLoadPoliciesAction = async (req) => {
 
         const mode = req.body.action;
 
@@ -44,6 +56,10 @@ class CrudParentController extends CrudController {
     }
 
     checkStorePolicies = async (req) => {
+        return await this.checkStorePoliciesAction(req);
+    }
+
+    checkStorePoliciesAction = async (req) => {
 
         const mode = req.body.action;
 
