@@ -37,6 +37,16 @@ class bGeneratorRouter {
         });
 
     }
+
+    crudSettings = (router, middlewares, model, controller, routeName) => {
+        router.post('/' +routeName + '/update/:id', middlewares, function(req, res, next) {
+            return controller.store(req, res);
+        });
+        router.post('/' + routeName, middlewares, function(req, res, next) {
+            return controller.getIndex(req, res);
+        });
+    }
+    
 }
 
 module.exports = new bGeneratorRouter();
