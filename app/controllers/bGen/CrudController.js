@@ -10,13 +10,15 @@ class CrudController {
     withSkeleton = false;
     user = null;
     config;
+    options;
     repository;
     parentModel;
     parentRef;
     objectRef;
 
-    constructor(config) {
+    constructor(config, options) {
         this.config = config;
+        this.options = options;
     }
 
     getConfig = async () => {
@@ -30,7 +32,7 @@ class CrudController {
 
     delete = async (req, res) => {
 
-        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
+        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req), this.options);
         this.repository = abstractListConfigParser.bGeneratorRepository;
 
         const policiesPassed = await this.checkDeletePolicies(req);
@@ -47,7 +49,7 @@ class CrudController {
     load = async (req, res) => {
         const mode = req.body.action || 'view'; // view, edit, create
 
-        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
+        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req), this.options);
         this.repository = abstractListConfigParser.bGeneratorRepository;
         this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
@@ -68,11 +70,17 @@ class CrudController {
             if(this.objectRef){
                 this.parentModel = abstractListConfigParser.bGeneratorParentModel;
                 this.parentRef = abstractListConfigParser.bGeneratorParentRef;
-                parent = await this.parentModel.findOne({
-                    where: {
+                if(this.parentModel){
+                    parent = await this.parentModel.findOne({
+                        where: {
+                            [this.parentRef]: req.body[this.objectRef]
+                        }
+                    })
+                }else{
+                    parent = {
                         [this.parentRef]: req.body[this.objectRef]
                     }
-                })
+                }
             }
 
             const form = await abstractListConfigParser.form(req, item, parent, {});
@@ -102,7 +110,7 @@ class CrudController {
             return jsonResponse.send(res, [], "Access Denied", 403);
         }
 
-        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
+        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req), this.options);
         this.repository = abstractListConfigParser.bGeneratorRepository;
         this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
@@ -192,15 +200,26 @@ class CrudController {
             item = await this.postFetchItem(req, item);
             const ni = forwardAction === 'create' ? null : item;
 
+            const customResponse = await this.customStoreResponse(req, res, item, mode, forwardAction);
+            if(customResponse !== false){
+                return customResponse;
+            }
+
             let parent = null;
             if(this.objectRef){
                 this.parentModel = abstractListConfigParser.bGeneratorParentModel;
                 this.parentRef = abstractListConfigParser.bGeneratorParentRef;
-                parent = await this.parentModel.findOne({
-                    where: {
+                if(this.parentModel) {
+                    parent = await this.parentModel.findOne({
+                        where: {
+                            [this.parentRef]: req.body[this.objectRef]
+                        }
+                    })
+                }else{
+                    parent = {
                         [this.parentRef]: req.body[this.objectRef]
                     }
-                })
+                }
             }
 
             const config = await abstractListConfigParser.form(req, ni, parent, []);
@@ -268,7 +287,7 @@ class CrudController {
         let items = [];
         let count = 0;
 
-        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req));
+        const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req), this.options);
         this.repository = abstractListConfigParser.bGeneratorRepository;
         this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
@@ -344,6 +363,10 @@ class CrudController {
 
     postStore = async (req, item, mode, forwardAction) => {
         return item;
+    }
+
+    customStoreResponse = async (req, res, item, mode, forwardAction) => {
+        return false;
     }
 
     checkIndexPolicies = async (req) => {

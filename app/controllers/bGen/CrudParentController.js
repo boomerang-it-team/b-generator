@@ -29,7 +29,7 @@ class CrudParentController extends CrudController {
         }
 
         const item = await this.repository.find(req.params.id);
-        if(item[this.objectRef] !== req.body[this.objectRef]){
+        if(item[this.objectRef] != req.body[this.objectRef]){
             return false;
         }
 
@@ -47,7 +47,7 @@ class CrudParentController extends CrudController {
 
         if(mode !== 'create'){
             const item = await this.repository.find(req.params.id);
-            if(item[this.objectRef] !== req.body[this.objectRef]){
+            if(item[this.objectRef] != req.body[this.objectRef]){
                 return false;
             }
         }
@@ -63,10 +63,10 @@ class CrudParentController extends CrudController {
 
         const mode = req.body.action;
 
-        if(mode !== "create"){
+        if(mode !== "create" && mode !== "save_and_add"){
             const item = await this.repository.find(req.params.id);
 
-            if(item[this.objectRef] !== req.body[this.objectRef]){
+            if(item[this.objectRef] != req.body[this.objectRef]){
                 return false;
             }
         }
