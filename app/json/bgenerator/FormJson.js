@@ -8,7 +8,8 @@ class FormJson extends BaseJson {
     options;
 
     constructor(options) {
-        super();
+
+        super(options.configParser);
 
         this.options = options;
         this.request = options.req;
@@ -22,6 +23,7 @@ class FormJson extends BaseJson {
         const item = this.options['item'];
         const parentId = this.options['pid'] ? this.options['pid'] : null;
 
+        res.key = item ? item.id : undefined;
         res.fields = this.fieldsToJson(configParser[ns.NS_FIELDS], ns.NS_IN_FORM);
         res.actions = this.actionsToJson(configParser[ns.NS_ACTIONS], item, parentId);
         res.title = this.options['pageTitle'];

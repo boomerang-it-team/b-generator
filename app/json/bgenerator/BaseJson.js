@@ -4,6 +4,11 @@ const {ns} = require("../../services/bGenerator");
 class BaseJson {
 
     request;
+    bGeneratorOptions;
+
+    constructor(abstractConfigParser) {
+        this.bGeneratorOptions = abstractConfigParser.bGeneratorOptions;
+    }
 
     fieldsToJson = (fields, check = ns.NS_IN_INDEX) => {
 
@@ -91,7 +96,7 @@ class BaseJson {
 
             if(action[ns.NS_ROUTE]){
 
-                if(action[ns.NS_TYPE] === ns.BUTTON_TYPE_REACT || action[ns.NS_TYPE] === ns.BUTTON_TYPE_ACTION || action[ns.NS_TYPE] === ns.BUTTON_TYPE_MODAL) {
+                if(action[ns.NS_TYPE] === ns.BUTTON_TYPE_REACT || action[ns.NS_TYPE] === ns.BUTTON_TYPE_ACTION || action[ns.NS_TYPE] === ns.BUTTON_TYPE_MODAL || action[ns.NS_TYPE] === ns.BUTTON_TYPE_METHOD) {
 
                     acRes[ns.NS_ROUTE] = action[ns.NS_ROUTE];
                     if(parentId != null) {
@@ -110,6 +115,8 @@ class BaseJson {
                     if(acRes[ns.NS_ROUTE].substr(0, 1) === '/'){
                         acRes[ns.NS_ROUTE] = process.env.APP_URL + acRes[ns.NS_ROUTE];
                     }
+
+                    acRes[ns.NS_ROUTE] = acRes[ns.NS_ROUTE].replace(":base", this.bGeneratorOptions.wrapper_api_base || process.env.APP_URL);
 
                     actions[key][ns.NS_ROUTE] = acRes[ns.NS_ROUTE];
 
@@ -179,7 +186,7 @@ class BaseJson {
 
                 if(fields[key][ns.NS_FORM] && fields[key][ns.NS_FORM][ns.NS_TYPE] !== 'password'){
                     if((errors == null) && !haveInput){
-                        if(item != null && data){
+                        if(item != null && typeof data !== 'undefined' && data !== null){
                             const relat = data;
                             if(Array.isArray(relat)){
                                 let resArr = [];

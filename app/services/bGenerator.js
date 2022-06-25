@@ -1,6 +1,3 @@
-const dbConfigFile = process.env.BASE_APP_PATH + process.env.DATABASE_CONFIG_FILE;
-const sequelize = require(dbConfigFile);
-
 class bGenerator {
 
     bGeneratorViewMode;
@@ -56,7 +53,10 @@ class bGenerator {
     bGeneratorSortField = null;
     bGeneratorSortOrder = null;
 
-    parseBGeneratorConfig = async (configFile, mode = VIEW_MODE_API) => {
+    bGeneratorOptions;
+
+    parseBGeneratorConfig = async (configFile, options, mode = VIEW_MODE_API) => {
+        this.bGeneratorOptions = options;
         await this.processConfigFile(configFile);
         this.bGeneratorViewMode = mode;
         return this;
@@ -152,6 +152,7 @@ class bGenerator {
         await this.fillFilterRelations(req, this.bGeneratorFilterItems, parentItem, defaultRelations);
 
         return {
+            bGeneratorOptions: this.bGeneratorOptions,
             [NS_TITLE]: this.bGeneratorListTitle,
             [NS_DISPLAY]: this.bGeneratorListItems,
             [NS_FIELDS]: this.bGeneratorFields,
@@ -187,6 +188,7 @@ class bGenerator {
         await this.fillFormRelations(req, items, item, parentItem, defaultRelations);
 
         return {
+            bGeneratorOptions: this.bGeneratorOptions,
             [NS_FIELDS]: this.bGeneratorFields,
             [NS_ACTIONS]: actions,
             [NS_CUSTOM_VIEW]: this.bGeneratorParams[NS_CUSTOM_VIEW],
@@ -216,7 +218,7 @@ class bGenerator {
 
         // get model
 
-        this.bGeneratorModel = require(process.env.BASE_APP_PATH + this.bGeneratorParams[NS_MODEL]);
+        this.bGeneratorModel = require(this.bGeneratorOptions.base_app_path + this.bGeneratorParams[NS_MODEL]);
 
         if(!this.bGeneratorModel){
             throw "AG Configuration: Model Cannot be instantiated.";
@@ -229,21 +231,23 @@ class bGenerator {
         // get settings for admin generator parent
         if(this.bGeneratorParams[NS_PARENT_MODEL]){
 
-            this.bGeneratorParentModel = require(process.env.BASE_APP_PATH + this.bGeneratorParams[NS_PARENT_MODEL]);
+            this.bGeneratorParentModel = require(this.bGeneratorOptions.base_app_path + this.bGeneratorParams[NS_PARENT_MODEL]);
 
             const model_explode = this.bGeneratorParams[NS_PARENT_MODEL].split("/");
             this.bGeneratorParentModelName = model_explode[model_explode.length - 1];
 
-            if(this.bGeneratorParams[NS_PARENT_REF]){
-                this.bGeneratorParentRef = this.bGeneratorParams[NS_PARENT_REF];
-            }
-
-            if(!this.bGeneratorParams[NS_OBJECT_REF]) {
-                throw "AG Configuration: Child Related Key Is Not Defined.";
-            } else {
-                this.bGeneratorObjectRef = this.bGeneratorParams[NS_OBJECT_REF];
-            }
         }
+
+        if(this.bGeneratorParams[NS_PARENT_REF]){
+            this.bGeneratorParentRef = this.bGeneratorParams[NS_PARENT_REF];
+        }
+
+        if(!this.bGeneratorParams[NS_OBJECT_REF]) {
+            throw "AG Configuration: Child Related Key Is Not Defined.";
+        } else {
+            this.bGeneratorObjectRef = this.bGeneratorParams[NS_OBJECT_REF];
+        }
+
         // ---------------------------------------
 
 
@@ -262,7 +266,7 @@ class bGenerator {
         }
 
         try{
-            this.bGeneratorRepository = require(process.env.BASE_APP_PATH + repository);
+            this.bGeneratorRepository = require(this.bGeneratorOptions.base_app_path + repository);
         }catch (e){
             throw "AG Configuration: Cannot Instantiate Repository: " + repository;
         }
@@ -299,8 +303,8 @@ class bGenerator {
 
     parseTableFields = async (json_config_fields) => {
 
-        const columns = await sequelize.query('SHOW COLUMNS FROM ' + this.bGeneratorModel.tableName);
-        const columnStructures = await sequelize.query('SHOW FIELDS FROM ' + this.bGeneratorModel.tableName);
+        const columns = await this.bGeneratorOptions.sequelize.query('SHOW COLUMNS FROM ' + this.bGeneratorModel.tableName);
+        const columnStructures = await this.bGeneratorOptions.sequelize.query('SHOW FIELDS FROM ' + this.bGeneratorModel.tableName);
 
         columns[0].map(cl => {
 
@@ -1753,7 +1757,7 @@ const NS_PARENT_REF = 'parentRef';
 const NS_OBJECT_REF = 'objectRef';
 const NS_LAYOUT = 'layout';
 const NS_FIELDS = 'fields';
-const NS_FIELDSETS = 'fieldsets';
+const NS_FIELDSETS = 'fieldSets';
 const NS_FIELDSET_LAYOUT = 'fieldSetLayout';
 const NS_LIST = 'list';
 const NS_EXCEL = 'excel';
@@ -1823,6 +1827,7 @@ const NS_CONDITION = 'condition';
 const BUTTON_TYPE_REACT = 'react';
 const BUTTON_TYPE_ACTION = 'action';
 const BUTTON_TYPE_MODAL = 'modal';
+const BUTTON_TYPE_METHOD = 'method';
 
 module.exports.bGenerator = new bGenerator();
 module.exports.ns = {
@@ -1833,6 +1838,7 @@ module.exports.ns = {
     BUTTON_TYPE_REACT,
     BUTTON_TYPE_ACTION,
     BUTTON_TYPE_MODAL,
+    BUTTON_TYPE_METHOD,
     NS_ROUTE,
     NS_VALUE,
     NS_ICON ,
