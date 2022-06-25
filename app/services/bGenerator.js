@@ -1827,6 +1827,7 @@ const NS_CONDITION = 'condition';
 const BUTTON_TYPE_REACT = 'react';
 const BUTTON_TYPE_ACTION = 'action';
 const BUTTON_TYPE_MODAL = 'modal';
+const BUTTON_TYPE_METHOD = 'method';
 
 module.exports.bGenerator = new bGenerator();
 module.exports.ns = {
@@ -1837,6 +1838,7 @@ module.exports.ns = {
     BUTTON_TYPE_REACT,
     BUTTON_TYPE_ACTION,
     BUTTON_TYPE_MODAL,
+    BUTTON_TYPE_METHOD,
     NS_ROUTE,
     NS_VALUE,
     NS_ICON ,

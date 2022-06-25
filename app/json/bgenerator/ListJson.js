@@ -136,7 +136,7 @@ class ListJson extends BaseJson {
                 let acRes = {...action};
 
                 if(action[ns.NS_ROUTE]){
-                    if(action[ns.NS_TYPE] === ns.BUTTON_TYPE_REACT || action[ns.NS_TYPE] === ns.BUTTON_TYPE_ACTION || action[ns.NS_TYPE] === ns.BUTTON_TYPE_MODAL) {
+                    if(action[ns.NS_TYPE] === ns.BUTTON_TYPE_REACT || action[ns.NS_TYPE] === ns.BUTTON_TYPE_ACTION || action[ns.NS_TYPE] === ns.BUTTON_TYPE_MODAL || action[ns.NS_TYPE] === ns.BUTTON_TYPE_METHOD) {
 
                         acRes[ns.NS_ROUTE] = action[ns.NS_ROUTE];
                         const matches = [...acRes[ns.NS_ROUTE].matchAll(/:(.*?)($|\/)/g)];

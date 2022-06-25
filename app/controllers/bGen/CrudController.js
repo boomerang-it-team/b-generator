@@ -129,7 +129,25 @@ class CrudController {
         }
 
         const input = req.body;
-        const validationRules = abstractListConfigParser.prepareFormValidation(req, abstractListConfigParser.bGeneratorFields, formItems, item, null, []);
+
+        let parent = null;
+        if(this.objectRef){
+            this.parentModel = abstractListConfigParser.bGeneratorParentModel;
+            this.parentRef = abstractListConfigParser.bGeneratorParentRef;
+            if(this.parentModel) {
+                parent = await this.parentModel.findOne({
+                    where: {
+                        [this.parentRef]: req.body[this.objectRef]
+                    }
+                })
+            }else{
+                parent = {
+                    [this.parentRef]: req.body[this.objectRef]
+                }
+            }
+        }
+
+        const validationRules = abstractListConfigParser.prepareFormValidation(req, abstractListConfigParser.bGeneratorFields, formItems, item, parent, []);
 
         const v = Validator.make(input, validationRules);
 
@@ -205,23 +223,6 @@ class CrudController {
                 return customResponse;
             }
 
-            let parent = null;
-            if(this.objectRef){
-                this.parentModel = abstractListConfigParser.bGeneratorParentModel;
-                this.parentRef = abstractListConfigParser.bGeneratorParentRef;
-                if(this.parentModel) {
-                    parent = await this.parentModel.findOne({
-                        where: {
-                            [this.parentRef]: req.body[this.objectRef]
-                        }
-                    })
-                }else{
-                    parent = {
-                        [this.parentRef]: req.body[this.objectRef]
-                    }
-                }
-            }
-
             const config = await abstractListConfigParser.form(req, ni, parent, []);
             const jsonResult = new FormJson({
                 req,
@@ -250,7 +251,7 @@ class CrudController {
                 item = await this.postFetchItem(req, item);
             }
 
-            const form = await abstractListConfigParser.form(req, mode === 'update' ? item : null, null, {});
+            const form = await abstractListConfigParser.form(req, mode === 'update' ? item : null, parent, {});
             const jsonResult = new FormJson({
                 req,
                 configParser: form,
