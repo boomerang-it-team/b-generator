@@ -292,6 +292,25 @@ class CrudController {
         this.repository = abstractListConfigParser.bGeneratorRepository;
         this.objectRef = abstractListConfigParser.bGeneratorObjectRef;
 
+        /** get Parent **/
+        let parent = null;
+        if(this.objectRef){
+            this.parentModel = abstractListConfigParser.bGeneratorParentModel;
+            this.parentRef = abstractListConfigParser.bGeneratorParentRef;
+            if(this.parentModel){
+                parent = await this.parentModel.findOne({
+                    where: {
+                        [this.parentRef]: req.body[this.objectRef]
+                    }
+                })
+            }else{
+                parent = {
+                    [this.parentRef]: req.body[this.objectRef]
+                }
+            }
+        }
+        /* -------------- */
+
         const policiesPassed = await this.checkIndexPolicies(req);
         if(!policiesPassed){
             return jsonResponse.send(res, [], "Access Denied", 403);
@@ -303,11 +322,13 @@ class CrudController {
         const limit = abstractListConfigParser.bGeneratorPerPage;
         const offset = (page - 1) * limit;
 
-        const list = await abstractListConfigParser.list(req);
+        const list = await abstractListConfigParser.list(req, parent);
 
         return this.repository.paginate(abstractListConfigParser.bGeneratorFilterItems, filterCriteria, limit, offset).then(async rs => {
             items = rs.rows;
             count = rs.count;
+
+            items = await abstractListConfigParser.fillListRelations(req, items, abstractListConfigParser.bGeneratorListItems, parent)
 
             items = await this.postFetchList(req, items);
 
