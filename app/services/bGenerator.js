@@ -378,6 +378,10 @@ class bGenerator {
                     this.bGeneratorFields[field[NS_NAME]][NS_DB_TYPE] = field[NS_DB_TYPE];
                 }
 
+                if(field[NS_DATA_PROVIDER]){
+                    this.bGeneratorFields[field[NS_NAME]][NS_DATA_PROVIDER] = field[NS_DATA_PROVIDER];
+                }
+
                 if(field[NS_FORM]){
                     if(field[NS_FORM][NS_CLASS]){
                         this.bGeneratorFields[field[NS_NAME]][NS_FORM][NS_CLASS] = field[NS_FORM][NS_CLASS];
@@ -412,7 +416,7 @@ class bGenerator {
                         this.bGeneratorFields[field[NS_NAME]][NS_FORM][NS_VALIDATION] = field[NS_FORM][NS_VALIDATION];
                         this.bGeneratorFields[field[NS_NAME]][NS_FILTER][NS_VALIDATION] = field[NS_FORM][NS_VALIDATION];
                     }
-                    if(field[NS_FORM][NS_HELPER]){
+                    if(typeof field[NS_FORM][NS_HELPER] !== "undefined"){
                         this.bGeneratorFields[field[NS_NAME]][NS_FORM][NS_HELPER] = field[NS_FORM][NS_HELPER] === '*' ? '*' : field[NS_FORM][NS_HELPER];
                     }
                     if(field[NS_FORM][NS_PLACEHOLDER]){
@@ -445,7 +449,7 @@ class bGenerator {
                     if(field[NS_FILTER][NS_VALIDATION]){
                         this.bGeneratorFields[field[NS_NAME]][NS_FILTER][NS_VALIDATION] = field[NS_FILTER][NS_VALIDATION];
                     }
-                    if(field[NS_FILTER][NS_HELPER]){
+                    if(typeof field[NS_FILTER][NS_HELPER] !== "undefined"){
                         this.bGeneratorFields[field[NS_NAME]][NS_FILTER][NS_HELPER] = field[NS_FILTER][NS_HELPER];
                     }
                     if(field[NS_FILTER][NS_PLACEHOLDER]){
@@ -796,6 +800,7 @@ class bGenerator {
             this.bGeneratorListLayout = json_config_list[NS_LAYOUT];
         }
 
+        this.bGeneratorObjectActionsDisplay = "expanded";
         if(json_config_list[NS_OBJECT_ACTIONS_DISPLAY]){
             this.bGeneratorObjectActionsDisplay = json_config_list[NS_OBJECT_ACTIONS_DISPLAY];
         }
@@ -1065,6 +1070,56 @@ class bGenerator {
 
         }
 
+    }
+
+    fillListRelations = async (req, items, listItems, parentItem = null, defaultRelations = null) => {
+
+        let newItems = items.map(x => x);
+
+        for(let pp = 0; pp < listItems.length; pp++){
+            const fieldName = listItems[pp];
+            const field = this.bGeneratorFields[fieldName];
+
+            if(!field) continue;
+
+            if(field[NS_DATA_PROVIDER]){
+                const dataProvider = field[NS_DATA_PROVIDER];
+                const choices = await this.loadListRelationFromDB(req, dataProvider, fieldName, items, parentItem, defaultRelations);
+
+                for(let i = 0; i < newItems.length; i++){
+                    newItems[i][fieldName] = choices[newItems[i][fieldName]] || undefined;
+                }
+            }
+
+        }
+
+        return newItems;
+
+    }
+
+    loadListRelationFromDB = async (req, dataProvider, fieldName, items = [], parentItem = null, defaultRelations = null) => {
+
+        let res = [];
+        let session;
+        let choice;
+
+        let ids = items.map(x => x[fieldName]);
+
+        if(typeof this.bGeneratorRepository[dataProvider] !== 'undefined' || (defaultRelations && defaultRelations[fieldName])) {
+
+            if(defaultRelations && defaultRelations[fieldName]){
+                res = defaultRelations[fieldName];
+            }else{
+                const choices = await this.bGeneratorRepository[dataProvider](parentItem, ids);
+                res = {};
+                choices.map(choice => {
+                    res[choice.id] = choice.__toString();
+                });
+            }
+
+            return res;
+
+        }
     }
 
     loadFormFilterRelationFromDB = async (req, dataProvider, fieldName, model = null, method = null, isRequired = false, item = null, parentItem = null, defaultRelations = null) => {
