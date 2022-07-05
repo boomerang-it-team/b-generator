@@ -37,12 +37,12 @@ class CrudController {
 
         const policiesPassed = await this.checkDeletePolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], "Access Denied", 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
         }
 
         await this.repository.delete(req.params.id);
 
-        return await this.fetchList(req, res, "Item Deleted Successfully.")
+        return await this.fetchList(req, res, (req.i18n ? req.i18n.t("response.general.deleted_successfully") : "Item Deleted Successfully." ))
 
     }
 
@@ -55,7 +55,7 @@ class CrudController {
 
         const policiesPassed = await this.checkLoadPolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], "Access Denied", 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
         }
 
         let item;
@@ -83,14 +83,16 @@ class CrudController {
                 }
             }
 
-            const form = await abstractListConfigParser.form(req, item, parent, {});
+            const defaultRelations = await this.getDefaultRelations(req, mode, item, parent);
+
+            const form = await abstractListConfigParser.form(req, item, parent, defaultRelations);
 
             const jsonResult = new FormJson({
                 req,
                 configParser: form,
                 item,
                 user: this.user,
-                pageTitle: form.title,
+                pageTitle: (typeof req.i18n !== typeof undefined) ? req.i18n.t(form.title) : form.title,
                 actionName: req.body.action,
                 pid: null
             });
@@ -107,7 +109,7 @@ class CrudController {
 
         const policiesPassed = await this.checkStorePolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], "Access Denied", 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
         }
 
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req), this.options);
@@ -128,7 +130,7 @@ class CrudController {
             item = this.repository.newModel();
         }
 
-        const input = req.body;
+        let input = req.body;
 
         let parent = null;
         if(this.objectRef){
@@ -147,7 +149,13 @@ class CrudController {
             }
         }
 
-        const validationRules = abstractListConfigParser.prepareFormValidation(req, abstractListConfigParser.bGeneratorFields, formItems, item, parent, []);
+        const validationRules = await abstractListConfigParser.prepareFormValidation(req, abstractListConfigParser.bGeneratorFields, formItems, item, parent, []);
+
+        Object.keys(validationRules).map(validationRule => {
+            if(typeof input[validationRule] === typeof undefined){
+                input[validationRule] = null;
+            }
+        })
 
         const v = Validator.make(input, validationRules);
 
@@ -162,7 +170,7 @@ class CrudController {
 
             if(mode === 'update'){
                 Object.keys(input).map(k => {
-                    if(this.isInsideFormItems(formItems, k)){
+                    if(this.isInsideFormItems(abstractListConfigParser.bGeneratorFields, formItems, k)){
                         item[k] = input[k];
                     }
                 })
@@ -177,7 +185,7 @@ class CrudController {
             }else{ // create, save and add
                 let createItem = {};
                 Object.keys(input).map(k => {
-                    if(this.isInsideFormItems(formItems, k)){
+                    if(this.isInsideFormItems(abstractListConfigParser.bGeneratorFields, formItems, k)){
                         createItem[k] = input[k];
                     }
                 });
@@ -194,7 +202,7 @@ class CrudController {
             const keys = Object.keys(input);
             for(let yy = 0; yy < keys.length; yy++){
                 const k = keys[yy];
-                if(this.isInsideFormItems(formItems, k)) {
+                if(this.isInsideFormItems(abstractListConfigParser.bGeneratorFields, formItems, k)) {
                     if (typeof item['set' + k] === 'function') {
                         item['set' + k](input[k]);
                         await item.save();
@@ -204,13 +212,13 @@ class CrudController {
 
             let message, forwardAction;
             if (mode === "save_and_add") {
-                message = "Item created successfully. You can add another item below.";
+                message = req.i18n ? req.i18n.t("response.general.created_successfully_you_can_add_another_one_below") : "Item created successfully. You can add another below.";
                 forwardAction = 'create';
             } else if(mode === 'create'){
-                message = "Item created successfully.";
+                message = req.i18n ? req.i18n.t("response.general.created_successfully") : "Item Created Successfully.";
                 forwardAction = 'edit';
             } else {
-                message = "Item updated successfully.";
+                message = req.i18n ? req.i18n.t("response.general.updated_successfully") : "Item Updated Successfully.";
                 forwardAction = 'edit';
             }
 
@@ -223,13 +231,15 @@ class CrudController {
                 return customResponse;
             }
 
-            const config = await abstractListConfigParser.form(req, ni, parent, []);
+            const defaultRelations = await this.getDefaultRelations(req, mode, item, parent);
+
+            const config = await abstractListConfigParser.form(req, ni, parent, defaultRelations);
             const jsonResult = new FormJson({
                 req,
                 configParser: config,
                 item: ni,
                 user: this.user,
-                pageTitle: config.title + "",
+                pageTitle: (typeof req.i18n !== typeof undefined) ? req.i18n.t(config.title + "") : config.title + "",
                 actionName: forwardAction,
                 pid: null
             });
@@ -251,30 +261,32 @@ class CrudController {
                 item = await this.postFetchItem(req, item);
             }
 
-            const form = await abstractListConfigParser.form(req, mode === 'update' ? item : null, parent, {});
+            const defaultRelations = await this.getDefaultRelations(req, mode, item, parent);
+
+            const form = await abstractListConfigParser.form(req, mode === 'update' ? item : null, parent, defaultRelations);
             const jsonResult = new FormJson({
                 req,
                 configParser: form,
                 item,
                 user: this.user,
-                pateTitle: form.title + '',
+                pageTitle: (typeof req.i18n !== typeof undefined) ? req.i18n.t(form.title + '') : form.title + '',
                 errors: abstractListConfigParser.formatErrors(v),
                 input,
                 actionName: forwardAction,
                 pid: null,
             });
 
-            return jsonResponse.send(res, await jsonResult.toArray(), "There is a problem during sending form.", 422);
+            return jsonResponse.send(res, await jsonResult.toArray(), (req.i18n ? req.i18n.t("common:response.errors.validation") : "There is a problem during sending form."), 422);
 
         }
     }
 
-    isInsideFormItems = (formItems, item) => {
+    isInsideFormItems = (fields, formItems, item) => {
         const formItemsKeys = Object.keys(formItems);
         for(let i = 0; i < formItemsKeys.length; i++){
             const formItem = formItems[formItemsKeys[i]];
             for(let j = 0; j < formItem.length; j++){
-                if(formItem[j] === item) return true;
+                if(formItem[j] === item && fields[item] && fields[item][ns.NS_FORM][ns.NS_CAN_CHANGE] !== false) return true;
             }
         }
 
@@ -313,7 +325,7 @@ class CrudController {
 
         const policiesPassed = await this.checkIndexPolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], "Access Denied", 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
         }
 
         this.applyCriteria(req, abstractListConfigParser.bGeneratorFields, abstractListConfigParser.bGeneratorFilterItems, filterCriteria, sort);
@@ -405,6 +417,10 @@ class CrudController {
 
     checkStorePolicies = async (req) => {
         return true;
+    }
+
+    getDefaultRelations = async (req, mode, item, parent) => {
+        return null;
     }
 }
 

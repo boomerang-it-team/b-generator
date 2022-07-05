@@ -159,11 +159,19 @@ class ListJson extends BaseJson {
                 }
 
                 if(action[ns.NS_LABEL]){
-                    acRes[ns.NS_LABEL] = action[ns.NS_LABEL];
+                    if(typeof this.request.i18n !== typeof undefined){
+                        acRes[ns.NS_LABEL] = this.request.i18n.t(action[ns.NS_LABEL]);
+                    }else{
+                        acRes[ns.NS_LABEL] = action[ns.NS_LABEL];
+                    }
                 }
 
                 if(action[ns.NS_CONFIRM]){
-                    acRes[ns.NS_CONFIRM] = action[ns.NS_CONFIRM];
+                    if(typeof this.request.i18n !== typeof undefined){
+                        acRes[ns.NS_CONFIRM] = this.request.i18n.t(action[ns.NS_CONFIRM]);
+                    }else{
+                        acRes[ns.NS_CONFIRM] = action[ns.NS_CONFIRM];
+                    }
                 }
 
                 if(acRes[ns.NS_CONDITION]){

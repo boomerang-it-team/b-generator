@@ -31,6 +31,7 @@ class FormJson extends BaseJson {
         res.formFieldSets = configParser[ns.NS_DISPLAY];
         res.fieldSetsSkeleton = configParser[ns.NS_FIELDSETS];
         res.fieldSetLayout = configParser[ns.NS_FIELDSET_LAYOUT];
+        res.actionsPlacement = configParser[ns.NS_ACTIONS_PLACEMENT];
         res.layout = configParser[ns.NS_LAYOUT];
         res.hasHelper = true;
 
