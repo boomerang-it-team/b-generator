@@ -27,6 +27,10 @@ class bGenerator {
     bGeneratorNewFieldSetLayout = "vertical"; // tabbed, wizard, vertical
     bGeneratorShowFieldSetLayout = "vertical"; // tabbed, wizard,vertical
 
+    bGeneratorEditActionsPlacement = "bottom"; // top, both
+    bGeneratorNewActionsPlacement = "bottom"; // top, both
+    bGeneratorShowActionsPlacement = "bottom"; // top, both
+
     bGeneratorExcelItems;
 
     bGeneratorNewTitle;
@@ -55,11 +59,12 @@ class bGenerator {
 
     bGeneratorOptions;
 
-    parseBGeneratorConfig = async (configFile, options, mode = VIEW_MODE_API) => {
-        this.bGeneratorOptions = options;
-        await this.processConfigFile(configFile);
-        this.bGeneratorViewMode = mode;
-        return this;
+    static parseBGeneratorConfig = async (configFile, options, mode = VIEW_MODE_API) => {
+        let bGenInstance = new bGenerator();
+        bGenInstance.bGeneratorOptions = options;
+        await bGenInstance.processConfigFile(configFile);
+        bGenInstance.bGeneratorViewMode = mode;
+        return bGenInstance;
     }
 
     processConfigFile = async (configFile) => {
@@ -130,6 +135,12 @@ class bGenerator {
             this.bGeneratorShowFieldSetLayout = json_config[NS_FORM][NS_FIELDSET_LAYOUT];
         }
 
+        if(json_config[NS_FORM][NS_ACTIONS_PLACEMENT]){
+            this.bGeneratorNewActionsPlacement = json_config[NS_FORM][NS_ACTIONS_PLACEMENT];
+            this.bGeneratorEditActionsPlacement = json_config[NS_FORM][NS_ACTIONS_PLACEMENT];
+            this.bGeneratorShowActionsPlacement = json_config[NS_FORM][NS_ACTIONS_PLACEMENT];
+        }
+
         this.bGeneratorNewItems = this.parseFormItems(json_config[NS_FORM], this.bGeneratorNewItems);
         this.bGeneratorEditItems = this.parseFormItems(json_config[NS_FORM], this.bGeneratorEditItems);
         this.bGeneratorShowItems = this.parseFormItems(json_config[NS_FORM], this.bGeneratorShowItems, false);
@@ -168,21 +179,23 @@ class bGenerator {
         };
     }
 
-    form = async (req, item = null, parentItem = null, defaultRelations = []) => {
+    form = async (req, item = null, parentItem = null, defaultRelations = null) => {
 
-        let actions, items, title, layout, fieldSetLayout;
+        let actions, items, title, layout, fieldSetLayout, actionsPlacement;
         if(item === null){
             actions = this.bGeneratorCreateActions;
             items = this.bGeneratorNewItems;
             title = this.bGeneratorNewTitle;
             layout = this.bGeneratorNewLayout;
             fieldSetLayout = this.bGeneratorNewFieldSetLayout;
+            actionsPlacement = this.bGeneratorNewActionsPlacement;
         }else{
             actions = this.bGeneratorEditActions;
             items = this.bGeneratorEditItems;
             title = this.bGeneratorEditTitle;
             layout = this.bGeneratorEditLayout;
             fieldSetLayout = this.bGeneratorEditFieldSetLayout;
+            actionsPlacement = this.bGeneratorEditActionsPlacement;
         }
 
         await this.fillFormRelations(req, items, item, parentItem, defaultRelations);
@@ -197,10 +210,11 @@ class bGenerator {
             [NS_TITLE]: title,
             [NS_FIELDSETS]: this.bGeneratorFieldSets,
             [NS_LAYOUT]: layout,
-            [NS_FIELDSET_LAYOUT]: fieldSetLayout
+            [NS_FIELDSET_LAYOUT]: fieldSetLayout,
+            [NS_ACTIONS_PLACEMENT]: actionsPlacement
         };
     }
-    
+
     processParams = (json_config) => {
 
         if(json_config[NS_PARAMS]){
@@ -392,6 +406,9 @@ class bGenerator {
                     if(field[NS_FORM][NS_TYPE]){
                         this.bGeneratorFields[field[NS_NAME]][NS_FORM][NS_TYPE] = field[NS_FORM][NS_TYPE];
                         this.bGeneratorFields[field[NS_NAME]][NS_FILTER][NS_TYPE] = field[NS_FORM][NS_TYPE];
+                    }
+                    if(typeof field[NS_FORM][NS_CAN_CHANGE] !== "undefined"){
+                        this.bGeneratorFields[field[NS_NAME]][NS_FORM][NS_CAN_CHANGE] = field[NS_FORM][NS_CAN_CHANGE];
                     }
                     if(field[NS_FORM][NS_DATA_PROVIDER]){
                         this.bGeneratorFields[field[NS_NAME]][NS_FORM][NS_DATA_PROVIDER] = field[NS_FORM][NS_DATA_PROVIDER];
@@ -927,6 +944,10 @@ class bGenerator {
             this.bGeneratorNewFieldSetLayout = json_config_new[NS_FIELDSET_LAYOUT];
         }
 
+        if(json_config_new[NS_ACTIONS_PLACEMENT]){
+            this.bGeneratorNewActionsPlacement = json_config_new[NS_ACTIONS_PLACEMENT];
+        }
+
         this.parseCreateActions(json_config_new);
 
     }
@@ -944,7 +965,11 @@ class bGenerator {
         }
 
         if(json_config_edit[NS_FIELDSET_LAYOUT]){
-            this.bGeneratorNewFieldSetLayout = json_config_edit[NS_FIELDSET_LAYOUT];
+            this.bGeneratorEditFieldSetLayout = json_config_edit[NS_FIELDSET_LAYOUT];
+        }
+
+        if(json_config_edit[NS_ACTIONS_PLACEMENT]){
+            this.bGeneratorEditActionsPlacement = json_config_edit[NS_ACTIONS_PLACEMENT];
         }
 
         this.parseEditActions(json_config_edit);
@@ -964,7 +989,11 @@ class bGenerator {
         }
 
         if(json_config_show[NS_FIELDSET_LAYOUT]){
-            this.bGeneratorNewFieldSetLayout = json_config_show[NS_FIELDSET_LAYOUT];
+            this.bGeneratorShowFieldSetLayout = json_config_show[NS_FIELDSET_LAYOUT];
+        }
+
+        if(json_config_show[NS_ACTIONS_PLACEMENT]){
+            this.bGeneratorShowActionsPlacement = json_config_show[NS_ACTIONS_PLACEMENT];
         }
 
         this.parseShowActions(json_config_show);
@@ -1142,69 +1171,38 @@ class bGenerator {
 
             return res;
 
-        }else if(false /*Route::has($dataProvider)*/){
-
-            if(method == null){
-                method = '__toString';
-            }
-
-            res = {};
-
-            if(this.bGeneratorViewMode === VIEW_MODE_NO_API){
-                session = req.session[this.bGeneratorFilterSession];
-            }
-
-            if(req.params[fieldName]) {
-                
-                choice = this.bGeneratorRepository.find(req.params[fieldName]);
-                if(choice != null) {
-                    res[choice.id] = choice[method]();
-                }
-
-            } else if(item != null){
-
-                choice = this.bGeneratorRepository.find(item[fieldName]);
-
-                if(choice != null){
-                    res[choice.id] = choice[method]();
-                }
-
-            } else if(this.bGeneratorViewMode === VIEW_MODE_NO_API && req.session['searchFilter'][fieldName]){
-
-                choice = this.bGeneratorRepository.find(session['searchFilter'][fieldName]);
-
-                if(choice != null) {
-                    res[choice.id] = choice[method]();
-                }
-
-            }
-
-            return res;
-
-        }else{
-            throw "AG Configuration: Data Provider Method Not Exists: " + dataProvider;
         }
+
+        return null;
 
     }
 
-    prepareFormValidation = (req, fields, formItems, item = null, parentItem = null, defaultRelations = null) => {
+    prepareFormValidation = async (req, fields, formItems, item = null, parentItem = null, defaultRelations = null) => {
 
         let validationResult = {};
 
-        Object.keys(formItems).map(formFieldSetKey => {
-            const formFieldSet = formItems[formFieldSetKey];
-            formFieldSet.map(async fieldName => {
+        const formItemsObjectKeys = Object.keys(formItems);
+        for(let fIOKIdx = 0; fIOKIdx < formItemsObjectKeys.length; fIOKIdx++){
+            const formFieldSetKey = formItemsObjectKeys[fIOKIdx];
 
+            const formFieldSet = formItems[formFieldSetKey];
+            for(let fFSetIdx = 0; fFSetIdx < formFieldSet.length; fFSetIdx++) {
+                const fieldName = formFieldSet[fFSetIdx];
                 const field = fields[fieldName];
 
                 if (field[NS_FORM]) {
                     const form = field[NS_FORM];
+
+                    if(form[NS_CAN_CHANGE] === false){
+                        continue;
+                    }
+
                     let validationArray = form[NS_VALIDATION] ? form[NS_VALIDATION] : ['nullable'];
 
-                    if(Array.isArray(validationArray)){
+                    if (Array.isArray(validationArray)) {
                         validationArray = validationArray.map(x => {
                             const isUnique = x.indexOf('unique') !== -1;
-                            if(isUnique && item !== null) {
+                            if (isUnique && item !== null) {
                                 return x + ',' + item.id;
                             }
                             return x;
@@ -1219,35 +1217,38 @@ class bGenerator {
 
                         const res = await this.loadFormFilterRelationFromDB(req, dataProvider, fieldName, model, method, false, item, parentItem, defaultRelations);
 
-                        if(model == null){
+                        if (model == null) {
 
-                            let _in = Object.keys(res);
-                            const isRequired = validationArray.indexOf('required') !== -1;
-                            if(!isRequired){
-                                _in = _in.concat("");
+                            if(res !== null) {
+                                let _in = Object.keys(res);
+                                const isRequired = validationArray.indexOf('required') !== -1;
+                                if (!isRequired) {
+                                    _in = _in.concat("");
+                                }
+
+                                validationArray = validationArray.concat('in:' + _in.join(','));
                             }
 
-                            validationArray = validationArray.concat('in:' + _in.join(','));
-
-                        }else{
+                        } else {
                             validationArray = validationArray.concat('exists:' + this.bGeneratorModel.tableName + ',id');
                         }
 
-                        if(multiple === true){
+                        if (multiple === true || multiple === "true") {
                             validationArray = validationArray.concat("array");
                         }
+
                     }
 
                     validationResult[fieldName] = validationArray.join('|');
                 }
 
-            })
-        });
+            }
+
+        }
 
         return validationResult;
 
     }
-
 
     parseListObjectActions = (json_config) => {
 
@@ -1814,6 +1815,7 @@ const NS_LAYOUT = 'layout';
 const NS_FIELDS = 'fields';
 const NS_FIELDSETS = 'fieldSets';
 const NS_FIELDSET_LAYOUT = 'fieldSetLayout';
+const NS_ACTIONS_PLACEMENT = 'actionsPlacement';
 const NS_LIST = 'list';
 const NS_EXCEL = 'excel';
 const NS_FORM = 'form';
@@ -1851,6 +1853,7 @@ const NS_CHOICES = 'choices';
 const NS_EXPANDED = 'expanded';
 const NS_MULTIPLE = 'multiple';
 const NS_SESSION_PREFIX = 'sessionPrefix';
+const NS_CAN_CHANGE = 'canChange';
 
 const NS_TITLE = 'title';
 const NS_TABLE_METHOD = 'table_method';
@@ -1884,7 +1887,7 @@ const BUTTON_TYPE_ACTION = 'action';
 const BUTTON_TYPE_MODAL = 'modal';
 const BUTTON_TYPE_METHOD = 'method';
 
-module.exports.bGenerator = new bGenerator();
+module.exports.bGenerator = bGenerator;
 module.exports.ns = {
     BUTTON_TYPE_LINK,
     BUTTON_TYPE_SUBMIT,
@@ -1930,5 +1933,7 @@ module.exports.ns = {
     DB_TYPE_INT,
     DB_TYPE_TEXT,
     NS_LAYOUT,
-    NS_OBJECT_ACTIONS_DISPLAY
+    NS_OBJECT_ACTIONS_DISPLAY,
+    NS_CAN_CHANGE,
+    NS_ACTIONS_PLACEMENT
 }

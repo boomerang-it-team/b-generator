@@ -35,7 +35,7 @@ class BaseJson {
                     const v = field[ns.NS_FORM][ns.NS_CHOICES][k];
                     x = x.concat({
                         key: k,
-                        value: v
+                        value: (typeof this.request.i18n !== typeof undefined) ? this.request.i18n.t(v) : v
                     })
                 });
                 fields[key][ns.NS_FORM][ns.NS_CHOICES] = x;
@@ -47,7 +47,7 @@ class BaseJson {
                     const v = field[ns.NS_FILTER][ns.NS_CHOICES][k];
                     x = x.concat({
                         key: k,
-                        value: v
+                        value: (typeof this.request.i18n !== typeof undefined) ? this.request.i18n.t(v) : v
                     });
                 });
 
@@ -55,24 +55,27 @@ class BaseJson {
             }
 
             if(field[ns.NS_FORM] && field[ns.NS_FORM][ns.NS_PLACEHOLDER]){
-                fields[key][ns.NS_FORM][ns.NS_PLACEHOLDER] = field[ns.NS_FORM][ns.NS_PLACEHOLDER];
+                if(typeof this.request.i18n !== typeof undefined){
+                    fields[key][ns.NS_FORM][ns.NS_PLACEHOLDER] = this.request.i18n.t(field[ns.NS_FORM][ns.NS_PLACEHOLDER]);
+                }else{
+                    fields[key][ns.NS_FORM][ns.NS_PLACEHOLDER] = field[ns.NS_FORM][ns.NS_PLACEHOLDER];
+                }
             }
 
             if(field[ns.NS_FILTER] && field[ns.NS_FILTER][ns.NS_PLACEHOLDER]){
-                fields[key][ns.NS_FILTER][ns.NS_PLACEHOLDER] = field[ns.NS_FILTER][ns.NS_PLACEHOLDER];
+                if(typeof this.request.i18n !== typeof undefined){
+                    fields[key][ns.NS_FILTER][ns.NS_PLACEHOLDER] = this.request.i18n.t(field[ns.NS_FILTER][ns.NS_PLACEHOLDER]);
+                }else{
+                    fields[key][ns.NS_FILTER][ns.NS_PLACEHOLDER] = field[ns.NS_FILTER][ns.NS_PLACEHOLDER];
+                }
             }
 
-
             if(field[ns.NS_FORM] && field[ns.NS_FORM][ns.NS_DATA_PROVIDER]){
-                if(false /*Route::has(field[ns.NS_FORM][ns.NS_DATA_PROVIDER])*/){
-                    //fields[key][ns.NS_FORM][ns.NS_DATA_PROVIDER] = route(fields[key][ns.NS_FORM][ns.NS_DATA_PROVIDER]);
-                }
+                fields[key][ns.NS_FORM][ns.NS_DATA_PROVIDER] = (fields[key][ns.NS_FORM][ns.NS_DATA_PROVIDER]).replace(":base", this.bGeneratorOptions.wrapper_api_base || process.env.APP_URL);
             }
 
             if(field[ns.NS_FILTER] && field[ns.NS_FILTER][ns.NS_DATA_PROVIDER]){
-                if(false /*Route::has(field[ns.NS_FILTER][ns.NS_DATA_PROVIDER])*/){
-                    //fields[key][ns.NS_FILTER][ns.NS_DATA_PROVIDER] = route(fields[key][ns.NS_FILTER][ns.NS_DATA_PROVIDER]);
-                }
+                fields[key][ns.NS_FILTER][ns.NS_DATA_PROVIDER] = (fields[key][ns.NS_FILTER][ns.NS_DATA_PROVIDER]).replace(":base", this.bGeneratorOptions.wrapper_api_base || process.env.APP_URL);;
             }
 
             res = res.concat({
@@ -133,11 +136,19 @@ class BaseJson {
             }
 
             if(action[ns.NS_LABEL]){
-                actions[key][ns.NS_LABEL] = action[ns.NS_LABEL];
+                if(typeof this.request.i18n !== typeof undefined){
+                    actions[key][ns.NS_LABEL] = this.request.i18n.t(action[ns.NS_LABEL]);
+                }else{
+                    actions[key][ns.NS_LABEL] = action[ns.NS_LABEL];
+                }
             }
 
             if(action[ns.NS_CONFIRM]){
-                actions[key][ns.NS_CONFIRM] = action[ns.NS_CONFIRM];
+                if(typeof this.request.i18n !== typeof undefined){
+                    actions[key][ns.NS_CONFIRM] = this.request.i18n.t(action[ns.NS_CONFIRM]);
+                }else{
+                    actions[key][ns.NS_CONFIRM] = action[ns.NS_CONFIRM];
+                }
             }
 
             if(action[ns.NS_VIEW]){
