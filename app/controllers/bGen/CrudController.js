@@ -155,6 +155,10 @@ class CrudController {
             if(typeof input[validationRule] === typeof undefined){
                 input[validationRule] = null;
             }
+
+            if(validationRules[validationRule].indexOf("bool") !== -1 && input[validationRule] === null){
+                input[validationRule] = false;
+            }
         })
 
         const v = Validator.make(input, validationRules);
@@ -183,7 +187,7 @@ class CrudController {
 
                 await item.save()
             }else{ // create, save and add
-                let createItem = {};
+                let createItem = item;
                 Object.keys(input).map(k => {
                     if(this.isInsideFormItems(abstractListConfigParser.bGeneratorFields, formItems, k)){
                         createItem[k] = input[k];
@@ -196,7 +200,7 @@ class CrudController {
                 }
                 /* -------------------- */
 
-                item = await this.repository.create(createItem);
+                item = await createItem.save();
             }
 
             const keys = Object.keys(input);
