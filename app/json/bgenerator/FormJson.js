@@ -35,6 +35,12 @@ class FormJson extends BaseJson {
         res.layout = configParser[ns.NS_LAYOUT];
         res.hasHelper = true;
 
+        if(this.request.i18n){
+            Object.keys(res.fieldSetsSkeleton).map(fieldSet => {
+                res.fieldSetsSkeleton[fieldSet].label = this.request.i18n.t(res.fieldSetsSkeleton[fieldSet].label)
+            })
+        }
+
         let errors = null;
         let input = [];
         if(this.options['errors']){
