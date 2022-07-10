@@ -1,6 +1,6 @@
 {
   "name": "b-generator",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A simple and useful nodejs and express package to create admin panels",
   "main": "index.js",
   "scripts": {
