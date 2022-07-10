@@ -37,12 +37,12 @@ class CrudController {
 
         const policiesPassed = await this.checkDeletePolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("common:response.errors.access_denied") : "Access Denied"), 403);
         }
 
         await this.repository.delete(req.params.id);
 
-        return await this.fetchList(req, res, (req.i18n ? req.i18n.t("response.general.deleted_successfully") : "Item Deleted Successfully." ))
+        return await this.fetchList(req, res, (req.i18n ? req.i18n.t("common:response.general.deleted_successfully") : "Item Deleted Successfully." ))
 
     }
 
@@ -55,7 +55,7 @@ class CrudController {
 
         const policiesPassed = await this.checkLoadPolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("common:response.errors.access_denied") : "Access Denied"), 403);
         }
 
         let item;
@@ -109,7 +109,7 @@ class CrudController {
 
         const policiesPassed = await this.checkStorePolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("common:response.errors.access_denied") : "Access Denied"), 403);
         }
 
         const abstractListConfigParser = await bGenerator.parseBGeneratorConfig(await this.getConfig(req), this.options);
@@ -216,13 +216,13 @@ class CrudController {
 
             let message, forwardAction;
             if (mode === "save_and_add") {
-                message = req.i18n ? req.i18n.t("response.general.created_successfully_you_can_add_another_one_below") : "Item created successfully. You can add another below.";
+                message = req.i18n ? req.i18n.t("common:response.general.created_successfully_you_can_add_another_one_below") : "Item created successfully. You can add another below.";
                 forwardAction = 'create';
             } else if(mode === 'create'){
-                message = req.i18n ? req.i18n.t("response.general.created_successfully") : "Item Created Successfully.";
+                message = req.i18n ? req.i18n.t("common:response.general.created_successfully") : "Item Created Successfully.";
                 forwardAction = 'edit';
             } else {
-                message = req.i18n ? req.i18n.t("response.general.updated_successfully") : "Item Updated Successfully.";
+                message = req.i18n ? req.i18n.t("common:response.general.updated_successfully") : "Item Updated Successfully.";
                 forwardAction = 'edit';
             }
 
@@ -329,7 +329,7 @@ class CrudController {
 
         const policiesPassed = await this.checkIndexPolicies(req);
         if(!policiesPassed){
-            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("response.errors.access_denied") : "Access Denied"), 403);
+            return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("common:response.errors.access_denied") : "Access Denied"), 403);
         }
 
         this.applyCriteria(req, abstractListConfigParser.bGeneratorFields, abstractListConfigParser.bGeneratorFilterItems, filterCriteria, sort);
