@@ -9,7 +9,10 @@
   },
   "dependencies": {
     "sequelize": "^6.20.1",
-    "Validator": "^1.1.4"
+    "Validator": "^1.1.4",
+    "exceljs": "^4.3.0",
+    "moment": "^2.29.1",
+    "jalali-moment": "^3.3.11"
   },
   "keywords": [
     "admin",
