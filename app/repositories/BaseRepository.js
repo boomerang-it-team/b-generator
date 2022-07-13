@@ -5,9 +5,6 @@ class BaseRepository {
 
     model;
     fieldSearchable = [];
-    criteria = [];
-    include = [];
-    sort = null;
 
     constructor(model) {
         this.model = model;
@@ -59,28 +56,25 @@ class BaseRepository {
             })
         })
 
-        this.sort = sort;
-        this.criteria = enhancedCriteria;
-        this.include = enhancedInclude;
+        return {
+            sort,
+            criteria: enhancedCriteria,
+            include: enhancedInclude
+        }
 
     }
 
-    clearCriteria = () => {
-        this.criteria = {};
-        this.sort = null;
-    }
-
-    paginate = (filterItems, filterCriteria, limit, offset) => {
+    paginate = (filterItems, filterCriteria, limit, offset, appliedCriteria) => {
 
         let options = {
-            where: this.criteria,
-            include: this.include,
+            where: appliedCriteria.criteria,
+            include: appliedCriteria.include,
             offset,
             limit,
         }
 
-        if(this.sort){
-            options.order = [this.sort];
+        if(appliedCriteria.sort){
+            options.order = [appliedCriteria.sort];
         }
 
         return this.model.findAndCountAll(options);
@@ -88,8 +82,7 @@ class BaseRepository {
 
     delete = id => {
         return this.model.destroy({
-            where: { id },
-            order: [this.sort]
+            where: { id }
         })
     }
 

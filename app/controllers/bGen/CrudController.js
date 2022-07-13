@@ -332,7 +332,7 @@ class CrudController {
             return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("common:response.errors.access_denied") : "Access Denied"), 403);
         }
 
-        this.applyCriteria(req, abstractListConfigParser.bGeneratorFields, abstractListConfigParser.bGeneratorFilterItems, filterCriteria, sort);
+        const appliedCriteria = this.applyCriteria(req, abstractListConfigParser.bGeneratorFields, abstractListConfigParser.bGeneratorFilterItems, filterCriteria, sort);
 
         const page = req.body.page || 1;
         const limit = abstractListConfigParser.bGeneratorPerPage;
@@ -340,7 +340,7 @@ class CrudController {
 
         const list = await abstractListConfigParser.list(req, parent);
 
-        return this.repository.paginate(abstractListConfigParser.bGeneratorFilterItems, filterCriteria, limit, offset).then(async rs => {
+        return this.repository.paginate(abstractListConfigParser.bGeneratorFilterItems, filterCriteria, limit, offset, appliedCriteria).then(async rs => {
             items = rs.rows;
             count = rs.count;
 

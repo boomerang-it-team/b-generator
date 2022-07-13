@@ -359,6 +359,21 @@ class bGenerator {
                     this.bGeneratorFields[field[NS_NAME]][NS_FILTER] = {};
                 }
 
+                // add for report generator
+                if(field[NS_FOOTER_EXPR]){
+                    this.bGeneratorFields[field[NS_NAME]][NS_FOOTER_EXPR] = field[NS_FOOTER_EXPR];
+                }
+                if(field[NS_PAGE_SUM_DATA]){
+                    this.bGeneratorFields[field[NS_NAME]][NS_PAGE_SUM_DATA] = field[NS_PAGE_SUM_DATA];
+                }
+                if(field[NS_DATA_FORMAT]){
+                    this.bGeneratorFields[field[NS_NAME]][NS_DATA_FORMAT] = field[NS_DATA_FORMAT];
+                }
+                if(field[NS_DATA_EXPR]){
+                    this.bGeneratorFields[field[NS_NAME]][NS_DATA_EXPR] = field[NS_DATA_EXPR];
+                }
+                // ------------------------
+
                 if(field[NS_LABEL]){
                     this.bGeneratorFields[field[NS_NAME]][NS_LABEL] = field[NS_LABEL];
                 }
@@ -1891,6 +1906,11 @@ const BUTTON_TYPE_MODAL = 'modal';
 const BUTTON_TYPE_METHOD = 'method';
 
 const NS_COLUMNS = 'columns';
+const NS_COUNT_COLUMNS = 'count_columns';
+const NS_FOOTER_EXPR = 'footer_expr';
+const NS_PAGE_SUM_DATA = 'page_sum_data';
+const NS_DATA_FORMAT = 'data_format';
+const NS_DATA_EXPR = 'data_expr';
 
 
 module.exports.bGenerator = bGenerator;
@@ -1944,5 +1964,10 @@ module.exports.ns = {
     NS_ACTIONS_PLACEMENT,
     NS_COLUMNS,
     NS_SEARCHABLE,
-    DEFAULT_SEARCHABLE
+    DEFAULT_SEARCHABLE,
+    NS_COUNT_COLUMNS,
+    NS_FOOTER_EXPR,
+    NS_PAGE_SUM_DATA,
+    NS_DATA_FORMAT,
+    NS_DATA_EXPR
 }

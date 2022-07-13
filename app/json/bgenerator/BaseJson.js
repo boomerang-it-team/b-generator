@@ -85,6 +85,14 @@ class BaseJson {
 
         })
 
+        res = res.map(field => {
+            delete field.value[ns.NS_DATA_EXPR]
+            delete field.value[ns.NS_FOOTER_EXPR]
+            delete field.value[ns.NS_DATA_FORMAT]
+            delete field.value[ns.NS_PAGE_SUM_DATA]
+            return field;
+        })
+
         return res;
     }
 
