@@ -59,9 +59,12 @@ class bGenerator {
 
     bGeneratorOptions;
 
+    constructor(options) {
+        this.bGeneratorOptions = options;
+    }
+
     static parseBGeneratorConfig = async (configFile, options, mode = VIEW_MODE_API) => {
-        let bGenInstance = new bGenerator();
-        bGenInstance.bGeneratorOptions = options;
+        let bGenInstance = new bGenerator(options);
         await bGenInstance.processConfigFile(configFile);
         bGenInstance.bGeneratorViewMode = mode;
         return bGenInstance;
@@ -257,7 +260,7 @@ class bGenerator {
         }
 
         if(!this.bGeneratorParams[NS_OBJECT_REF]) {
-            throw "AG Configuration: Child Related Key Is Not Defined.";
+
         } else {
             this.bGeneratorObjectRef = this.bGeneratorParams[NS_OBJECT_REF];
         }
@@ -1177,7 +1180,7 @@ class bGenerator {
 
     }
 
-    prepareFormValidation = async (req, fields, formItems, item = null, parentItem = null, defaultRelations = null) => {
+    prepareFormValidation = async (req, fields, formItems, item = null, parentItem = null, defaultRelations = null, formType = NS_FORM) => {
 
         let validationResult = {};
 
@@ -1190,8 +1193,8 @@ class bGenerator {
                 const fieldName = formFieldSet[fFSetIdx];
                 const field = fields[fieldName];
 
-                if (field[NS_FORM]) {
-                    const form = field[NS_FORM];
+                if (field[formType]) {
+                    const form = field[formType];
 
                     if(form[NS_CAN_CHANGE] === false){
                         continue;
@@ -1887,6 +1890,9 @@ const BUTTON_TYPE_ACTION = 'action';
 const BUTTON_TYPE_MODAL = 'modal';
 const BUTTON_TYPE_METHOD = 'method';
 
+const NS_COLUMNS = 'columns';
+
+
 module.exports.bGenerator = bGenerator;
 module.exports.ns = {
     BUTTON_TYPE_LINK,
@@ -1935,5 +1941,8 @@ module.exports.ns = {
     NS_LAYOUT,
     NS_OBJECT_ACTIONS_DISPLAY,
     NS_CAN_CHANGE,
-    NS_ACTIONS_PLACEMENT
+    NS_ACTIONS_PLACEMENT,
+    NS_COLUMNS,
+    NS_SEARCHABLE,
+    DEFAULT_SEARCHABLE
 }

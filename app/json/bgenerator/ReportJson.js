@@ -1,39 +1,40 @@
-class ReportJson {
+const {ns} = require("./../../services/bGenerator");
 
-    request;
-    response;
+const BaseJson = require('./BaseJson');
+
+class ReportJson extends BaseJson {
+
     options;
+    request;
 
+    fields;
+    objectActions;
+    parentKey;
 
-    constructor(request, response, options) {
+    constructor(options) {
 
-        this.options = options
-        this.request = request;
-        this.response = response;
+        super(options.configParser);
+
+        this.options = options;
+        this.request = options.req;
+
+        this.fields = options.configParser[ns.NS_FIELDS];
+        this.objectActions = options.configParser[ns.NS_OBJECT_ACTIONS];
+        this.parentKey = options.parentKey;
 
     }
 
     toArray = async () => {
 
-        const result = this.options['result'];
-        const headers = this.options['headers'];
-        const page_title = this.options['page_title'];
-        const data_format = this.options['data_format'];
-        const page_sum_data = this.options['page_sum_data'];
-
-        let headerJson = [];
-        for(let i = 0; i < headers.length; i++){
-            const header = headers[i];
-            headerJson = headerJson.concat(this.request.i18n ? this.request.i18n.t(header) : header);
-        }
+        // todo add object actions
 
         return {
-            result,
-            headers: headerJson,
-            page_title,
-            data_format,
-            page_sum_data
+            headers: this.options.headers,
+            result: this.options.result,
+            data_format: this.options.dataFormat,
+            page_sum_data: this.options.pageSumData,
         };
+
     }
 
 

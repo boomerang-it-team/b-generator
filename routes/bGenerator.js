@@ -46,7 +46,25 @@ class bGeneratorRouter {
             return controller.getIndex(req, res);
         });
     }
-    
+
+    report = (router, middlewares, controller, routeName) => {
+        router.post('/' +routeName + '/report', middlewares, function(req, res, next) {
+            return controller.report(req, res);
+        });
+        router.post('/' + routeName, middlewares, function(req, res, next) {
+            return controller.getIndex(req, res);
+        });
+    }
+
+    reportParent = (router, middlewares, controller, routeName) => {
+        router.post('/' +routeName + '/report/:id', middlewares, function(req, res, next) {
+            return controller.report(req, res);
+        });
+        router.post('/' + routeName, middlewares, function(req, res, next) {
+            return controller.getIndex(req, res);
+        });
+    }
+
 }
 
 module.exports = new bGeneratorRouter();

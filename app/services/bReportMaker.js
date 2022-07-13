@@ -1,21 +1,139 @@
 const excelJS = require("exceljs");
 const moment = require("moment");
 const jMoment = require("jalali-moment");
+const bGenerator = require("./bGenerator");
+const bBase = bGenerator.bGenerator;
 
-class bReportMaker {
+class bReportMaker extends bBase {
 
-    sequelize;
     variable_data = [];
     raw_data = [];
     data = [];
 
-    constructor(sequelize) {
-        this.sequelize = sequelize;
+
+    bGeneratorColumnItems = []
+    bGeneratorCountColumnItems = []
+
+    constructor(options) {
+        super(options);
     }
+
+    static parseBReportMakerConfig = async (configFile, options) => {
+        let bGenInstance = new bReportMaker(options);
+        await bGenInstance.processConfigFile(configFile);
+        return bGenInstance;
+    }
+
+    processConfigFile = async (configFile) => {
+
+        const json_config = configFile;
+        this.processParams(json_config);
+
+        if(!json_config[bGenerator.ns.NS_FIELDS]){
+            json_config[bGenerator.ns.NS_FIELDS] = [];
+        }
+
+        // instantiate columns
+        await this.parseTableFields(json_config[bGenerator.ns.NS_FIELDS]);
+
+        if(!json_config[bGenerator.ns.NS_LIST]){
+            json_config[bGenerator.ns.NS_LIST] = {};
+        }
+
+        this.parseListItems(json_config[bGenerator.ns.NS_LIST]);
+
+        if(!json_config[bGenerator.ns.NS_EXCEL]){
+            json_config[bGenerator.ns.NS_EXCEL] = {};
+        }
+
+        this.parseExcelItems(json_config[bGenerator.ns.NS_EXCEL]);
+
+        this.bGeneratorFilterItems = [];
+
+        if(!json_config[bGenerator.ns.NS_FILTER]){
+            json_config[bGenerator.ns.NS_FILTER] = [];
+        }
+
+        this.parseFilterItems(json_config[bGenerator.ns.NS_FILTER]);
+
+        // custom for bReportMaker
+        this.parseColumnItems(json_config[bGenerator.ns.NS_COLUMNS]);
+
+        this.parseCountColumnItems(json_config[NS_COUNT_COLUMNS]);
+
+    }
+
+    parseColumnItems = (json_config) => {
+
+        if(json_config){
+
+            if(!Array.isArray(json_config)){
+                throw "AG Configuration: Columns should be array";
+            }
+
+            json_config.map(item => {
+                this.bGeneratorColumnItems.push(item);
+            })
+
+        }else{
+
+            Object.keys(this.bGeneratorFields).map(item_key => {
+                const item_val = this.bGeneratorFields[item_key];
+                if(item_val[bGenerator.ns.NS_SEARCHABLE] && item_val[bGenerator.ns.NS_SEARCHABLE] === true){
+                    this.bGeneratorFilterItems.push(item_key);
+                }else if(bGenerator.ns.DEFAULT_SEARCHABLE === true){
+                    this.bGeneratorFilterItems.push(item_key);
+                }
+            })
+        }
+
+    }
+
+    parseCountColumnItems = (json_config) => {
+
+        if(json_config){
+
+            if(!Array.isArray(json_config)){
+                throw "AG Configuration: Count Columns should be array";
+            }
+
+            json_config.map(item => {
+                this.bGeneratorCountColumnItems.push(item);
+            })
+
+        }else{
+            return []
+        }
+
+    }
+
+    defaultObjectActions = () => ({
+
+    });
+
+    defaultListActions = () => ({
+
+    });
+
+    defaultBatchActions = () => ({
+        'batchExportExcel': {
+            'label': 'generator.exportExcel',
+        }
+    });
+
+
+    // -----------------------------------------------------------
+    // -----------------------------------------------------------
+    // -----------------------------------------------------------
+
 
     createReportData = async (model, query, columns, sort, page_number, count_per_page, data_expr, footer_expr, variables, countColumns = []) => {
 
-        let result = [];
+        let result = {};
+
+        if(!query){
+            query = {};
+        }
 
         const offset = (Number(page_number) - 1) * Number(count_per_page);
         const limit = Number(count_per_page);
@@ -29,24 +147,28 @@ class bReportMaker {
             }
         }
 
-        const count = model.count(count_query);
+        const count = await model.count(count_query);
 
         result.count = count;
         result.page_number = page_number;
         result.count_per_page = count_per_page;
 
+        query.raw = true;
         query.limit = limit;
         query.offset = offset;
-        query.order = [sort];
 
-        const data_arr = model.findAll(query);
+        if(sort){
+            query.order = [sort];
+        }
+
+        const data_arr = await model.findAll(query);
         let result_data = [];
 
         this.raw_data = data_arr;
 
         for(let i = 0; i < data_arr.length; i++){
 
-            const data = data_arr[j];
+            const data = data_arr[i];
 
             let result_data_row = [];
             const variable_result = await this.computeVariables(data, variables);
@@ -86,7 +208,7 @@ class bReportMaker {
             count_per_page = 3000;
         }
 
-        const result = this.createReportData(model, query, columns, sort, page_number, count_per_page, data_expr, footer_expr, variables, verbose);
+        const result = await this.createReportData(model, query, columns, sort, page_number, count_per_page, data_expr, footer_expr, variables, verbose);
         await this.exportToExcelByResults(req, res, result, headers, page_number, count_per_page, data_format, report_title, extra_heading);
 
     }
@@ -117,74 +239,102 @@ class bReportMaker {
         }
 
         const header_style = {
-            borders: {
+            border: {
                 bottom: header_border,
-                left: header_border,
                 top: header_border,
-                right: header_border
-            },
-            fill: {
-                type: 'solid',
-                color: '#E1E0F7'
+                right: header_border,
+                left: header_border
             },
             font: {
                 bold: false,
                 size: 12
+            },
+            fill: {
+                type: 'pattern',
+                pattern:'solid',
+                fgColor: { argb:'E1E0F7' }
             }
         }
 
         const odd_style = {
-            borders: {
+            border: {
                 bottom: default_border,
-                left: default_border,
                 top: default_border,
-                right: default_border
-            },
-            fill: {
-                type: 'solid',
-                color: '#F1F1F1'
+                right: default_border,
+                left: default_border
             },
             font: {
                 bold: false,
                 size: 10
+            },
+            fill: {
+                type: 'pattern',
+                pattern:'solid',
+                fgColor: { argb:'FFFFFF' }
             }
         }
 
         const even_style = {
-            borders: {
+            border: {
                 bottom: default_border,
-                left: default_border,
                 top: default_border,
-                right: default_border
+                right: default_border,
+                left: default_border
             },
             font: {
                 bold: false,
                 size: 10
+            },
+            fill: {
+                type: 'pattern',
+                pattern:'solid',
+                fgColor: { argb:'F0F0F0' }
             }
         }
 
         // heading and extra heading
         worksheet.mergeCells('A1:C1');
         worksheet.mergeCells('D1:H1');
-        //$objPHPExcel->getActiveSheet()->getStyle('A1:C1')->applyFromArray($header_style);
-        //$objPHPExcel->getActiveSheet()->getStyle('D1:H1')->applyFromArray($odd_style);
         worksheet.getCell('A1').value = (req.i18n ? req.i18n.t("common:labels.report_title") : "Report Title");
         worksheet.getCell('D1').value = report_title;
 
+        /* ----- style ------- */
+        worksheet.getCell("A1").border = header_style.border;
+        worksheet.getCell("A1").font = header_style.font
+        worksheet.getCell("A1").fill = header_style.fill;
+        worksheet.getCell("D1").border = odd_style.border;
+        worksheet.getCell("D1").font = odd_style.font;
+        worksheet.getCell("D1").fill = odd_style.fill;
+        /* ------------------ */
+
         worksheet.mergeCells('A2:C2');
         worksheet.mergeCells('D2:H2');
-        //$objPHPExcel->getActiveSheet()->getStyle('A2:C2')->applyFromArray($header_style);
-        //$objPHPExcel->getActiveSheet()->getStyle('D2:H2')->applyFromArray($odd_style);
         worksheet.getCell('A2').value = (req.i18n ? req.i18n.t("common:labels.report_date") : "Report Date");
-        worksheet.getCell('D2').value = this.getCurrentDateByLocale();
+        worksheet.getCell('D2').value = this.getCurrentDateByLocale(req);
+
+        /* ----- style ------- */
+        worksheet.getCell("A2").border = header_style.border;
+        worksheet.getCell("A2").font = header_style.font
+        worksheet.getCell("A2").fill = header_style.fill;
+        worksheet.getCell("D2").border = odd_style.border;
+        worksheet.getCell("D2").font = odd_style.font;
+        worksheet.getCell("D2").fill = odd_style.fill;
+        /* ------------------ */
 
         worksheet.mergeCells('A3:C3');
         worksheet.mergeCells('D3:H3');
-        //$objPHPExcel->getActiveSheet()->getStyle('A3:C3')->applyFromArray($header_style);
-        //$objPHPExcel->getActiveSheet()->getStyle('D3:H3')->applyFromArray($odd_style);
         const total = Math.ceil(count / count_per_page);
         worksheet.getCell('A3').value = (req.i18n ? req.i18n.t("common:labels.page") : "Page");
         worksheet.getCell('D3').value = (req.i18n ? req.i18n.t("common:labels.page_from_total", {page: page_number, total}) : "Page " + page_number + " From " + total);
+
+        /* ----- style ------- */
+        worksheet.getCell("A3").border = header_style.border;
+        worksheet.getCell("A3").font = header_style.font
+        worksheet.getCell("A3").fill = header_style.fill;
+        worksheet.getCell("D3").border = odd_style.border;
+        worksheet.getCell("D3").font = odd_style.font;
+        worksheet.getCell("D3").fill = odd_style.fill;
+        /* ------------------ */
 
         let t = 3;
         const extraKeys = Object.keys(extra_heading);
@@ -196,19 +346,32 @@ class bReportMaker {
 
             worksheet.mergeCells(t, 0, t, 2);
             worksheet.mergeCells(t, 3, t, 7);
-            //$objPHPExcel->getActiveSheet()->getStyle('A'.$t.':'.'C'.$t)->applyFromArray($header_style);
-            //$objPHPExcel->getActiveSheet()->getStyle('D'.$t.':'.'H'.$t)->applyFromArray($odd_style);
             worksheet.getCell(t, 0).value = ex_key;
             worksheet.getCell(t, 3).value = ex_value;
 
+            /* ----- style ------- */
+            worksheet.getCell(t, 0).border = header_style.border
+            worksheet.getCell(t, 0).font = header_style.font
+            worksheet.getCell(t, 0).fill = header_style.fill
+            worksheet.getCell(t, 3).border = odd_style.border
+            worksheet.getCell(t, 3).font = odd_style.font
+            worksheet.getCell(t, 3).fill = odd_style.fill
+            /* ------------------ */
+
         }
 
-        let i = 0;
+        let i = 1;
         for(let j = 0; j < headers.length; j++){
             const header = headers[j];
-            worksheet.getCell(t + 2, i).value = header;
-            //$objPHPExcel->getActiveSheet()->getStyleByColumnAndRow($i, $t + 2)->applyFromArray($header_style);
-            //$objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($i)->setAutoSize(true);
+            let row = worksheet.getRow(t + 2);
+            row.getCell(i).value = header;
+
+            /* ----- style ------- */
+            row.getCell(i).border = header_style.border;
+            row.getCell(i).font = header_style.font
+            row.getCell(i).fill = header_style.fill;
+            /* ------------------ */
+
             i++;
         }
 
@@ -217,38 +380,42 @@ class bReportMaker {
         for(let j = 0; j < data.length; j++){
             const row = data[j];
             const db_row_number = Number(row_number) - (t + 3);
+            const excelRow = worksheet.getRow(row_number);
             i = (i + 1) % 2
             let className = "even";
             if(i % 2 === 1){
                 className = "odd";
             }
 
-            let col_number = 0;
+            let col_number = 1;
             for(let k = 0; k < row.length; k++){
 
                 const item = row[k];
-                let view_func = data_format[col_number]['func'] || ""
+                let view_func = data_format[k]['func'] || ""
+
+                excelRow.getCell(col_number).border = odd_style.border
+                excelRow.getCell(col_number).font = odd_style.font
 
                 if(className === "even"){
-                    //$objPHPExcel->getActiveSheet()->getStyleByColumnAndRow($col_number, $row_number)->applyFromArray($even_style);
+                    excelRow.getCell(col_number).fill = even_style.fill
                 }else{
-                    //$objPHPExcel->getActiveSheet()->getStyleByColumnAndRow($col_number, $row_number)->applyFromArray($odd_style);
+                    excelRow.getCell(col_number).fill = odd_style.fill
                 }
 
                 let item_value = item;
-                if(typeof item === 'object'){
+                if(item !== null && typeof item === 'object'){
                     item_value = await item.__toString();
                 }
 
                 let ddd;
-                if(data_format[col_number][0]){
-                    ddd = data_format[col_number];
+                if(data_format[k][0]){
+                    ddd = data_format[k];
                 }else{
-                    ddd = [data_format[col_number]];
+                    ddd = [data_format[k]];
                 }
 
                 // TODO CONDITIONAL STYLES
-                worksheet.getCell(row_number, col_number).value = item_value;
+                excelRow.getCell(col_number).value = item_value;
 
                 col_number++;
 
@@ -301,7 +468,7 @@ class bReportMaker {
 
     computeVariables = async (data, variables) => {
 
-        let variable_result = [];
+        let variable_result = {};
         const varKeys = Object.keys(variables);
         for(let i = 0; i < varKeys.length; i++){
             const var_key = varKeys[i];
@@ -471,13 +638,13 @@ class bReportMaker {
     }
 
     isLayoutRightToLeft = (req) => {
-        const lng = req.headers['accept-language'];
+        const lng = req.headers['accept-language'] || 'en';
         return lng && (lng.toLowerCase() === "fa" || lng.toLowerCase() === "ar");
     }
 
     getCurrentDateByLocale = req => {
-        const lng = req.headers['accept-language'];
-        if(lng.toLowerCase() === "fa"){
+        const lng = req.headers['accept-language'] || 'en';
+        if(lng.toLowerCase() !== "fa"){
             return moment().format('YYYY-MM-DD hh:mm:ss')
         }else{
             return jMoment().locale("fa").format('YYYY-MM-DD hh:mm:ss')
@@ -486,4 +653,17 @@ class bReportMaker {
 
 }
 
-module.exports.default = bReportMaker;
+const NS_COUNT_COLUMNS = 'count_columns';
+const NS_FOOTER_EXPR = 'footer_expr';
+const NS_PAGE_SUM_DATA = 'page_sum_data';
+const NS_DATA_FORMAT = 'data_format';
+const NS_DATA_EXPR = 'data_expr';
+
+module.exports = bReportMaker;
+module.exports.ns = {
+    NS_COUNT_COLUMNS,
+    NS_FOOTER_EXPR,
+    NS_PAGE_SUM_DATA,
+    NS_DATA_FORMAT,
+    NS_DATA_EXPR
+}
