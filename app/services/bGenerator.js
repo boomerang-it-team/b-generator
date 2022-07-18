@@ -1906,11 +1906,11 @@ const BUTTON_TYPE_MODAL = 'modal';
 const BUTTON_TYPE_METHOD = 'method';
 
 const NS_COLUMNS = 'columns';
-const NS_COUNT_COLUMNS = 'count_columns';
-const NS_FOOTER_EXPR = 'footer_expr';
-const NS_PAGE_SUM_DATA = 'page_sum_data';
-const NS_DATA_FORMAT = 'data_format';
-const NS_DATA_EXPR = 'data_expr';
+const NS_COUNT_COLUMNS = 'countColumns';
+const NS_FOOTER_EXPR = 'footerExpr';
+const NS_PAGE_SUM_DATA = 'pageSumData';
+const NS_DATA_FORMAT = 'dataFormat';
+const NS_DATA_EXPR = 'dataExpr';
 
 
 module.exports.bGenerator = bGenerator;
@@ -1969,5 +1969,6 @@ module.exports.ns = {
     NS_FOOTER_EXPR,
     NS_PAGE_SUM_DATA,
     NS_DATA_FORMAT,
-    NS_DATA_EXPR
+    NS_DATA_EXPR,
+    NS_TITLE
 }

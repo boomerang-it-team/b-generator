@@ -11,10 +11,11 @@ class ReportPrepareJson extends BaseJson {
     batchActions;
     generalActions;
     listActions;
-    filterItems;
     objectActionsDisplay;
     pageTitle;
     parentKey;
+    formFieldSets;
+    fieldSetsSkeleton;
 
     constructor(options) {
 
@@ -27,17 +28,20 @@ class ReportPrepareJson extends BaseJson {
         this.batchActions = options.configParser[ns.NS_BATCH_ACTIONS];
         this.generalActions = options.configParser[ns.NS_GENERAL_ACTIONS];
         this.listActions = options.configParser[ns.NS_ACTIONS];
-        this.filterItems = options.configParser[ns.NS_FILTER];
         this.objectActionsDisplay = options.configParser[ns.NS_OBJECT_ACTIONS_DISPLAY]
         this.pageTitle = options.pageTitle;
         this.parentKey = options.parentKey;
+        this.formFieldSets = options.configParser[ns.NS_FILTER];
+        this.fieldSetsSkeleton = options.configParser[ns.NS_FIELDSETS]
     }
 
     toArray = async () => {
+
         let res = {};
 
-        res.filterItems = this.filterItems;
         res.fields = this.fieldsToJson(this.fields);
+        res.formFieldSets = this.formFieldSets;
+        res.fieldSetsSkeleton = this.fieldSetsSkeleton;
 
         res.fields = res.fields.map(field => {
             delete field.value.form

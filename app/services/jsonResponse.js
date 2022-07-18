@@ -11,6 +11,8 @@ class jsonResponse {
             message = '';
         }
 
+        res.setHeader('Content-Type', 'application/json');
+
         return res.send({
             "returnCode" : code,
             "message" : message,

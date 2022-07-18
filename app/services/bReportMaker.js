@@ -36,6 +36,13 @@ class bReportMaker extends bBase {
         // instantiate columns
         await this.parseTableFields(json_config[bGenerator.ns.NS_FIELDS]);
 
+        if(!json_config[bGenerator.ns.NS_FIELDSETS]){
+            json_config[bGenerator.ns.NS_FIELDSETS] = [];
+        }
+
+        // instantiate columns
+        this.parseTableFieldSets(json_config[bGenerator.ns.NS_FIELDSETS]);
+
         if(!json_config[bGenerator.ns.NS_LIST]){
             json_config[bGenerator.ns.NS_LIST] = {};
         }
@@ -54,13 +61,35 @@ class bReportMaker extends bBase {
             json_config[bGenerator.ns.NS_FILTER] = [];
         }
 
-        this.parseFilterItems(json_config[bGenerator.ns.NS_FILTER]);
+        this.bGeneratorFilterItems = this.parseFormItems(json_config[bGenerator.ns.NS_FILTER], this.bGeneratorFilterItems, false);
 
         // custom for bReportMaker
         this.parseColumnItems(json_config[bGenerator.ns.NS_COLUMNS]);
 
         this.parseCountColumnItems(json_config[NS_COUNT_COLUMNS]);
 
+    }
+
+    report = async (req, parentItem = null, defaultRelations = null) => {
+
+        await this.fillFormRelations(req, this.bGeneratorFilterItems, parentItem, defaultRelations);
+
+        return {
+            bGeneratorOptions: this.bGeneratorOptions,
+            [bGenerator.ns.NS_TITLE]: this.bGeneratorListTitle,
+            [bGenerator.ns.NS_DISPLAY]: this.bGeneratorListItems,
+            [bGenerator.ns.NS_FIELDS]: this.bGeneratorFields,
+            [bGenerator.ns.NS_OBJECT_ACTIONS]: this.bGeneratorObjectActions,
+            [bGenerator.ns.NS_ACTIONS]: this.bGeneratorListActions,
+            [bGenerator.ns.NS_GENERAL_ACTIONS]: this.bGeneratorGeneralActions,
+            [bGenerator.ns.NS_BATCH_ACTIONS]: this.bGeneratorBatchActions,
+            [bGenerator.ns.NS_CUSTOM_VIEW]: this.bGeneratorParams[bGenerator.ns.NS_CUSTOM_VIEW],
+            [bGenerator.ns.NS_MODEL]: this.bGeneratorModelName,
+            [bGenerator.ns.NS_FILTER]: this.bGeneratorFilterItems,
+            [bGenerator.ns.NS_LAYOUT]: this.bGeneratorListLayout,
+            [bGenerator.ns.NS_OBJECT_ACTIONS_DISPLAY]: this.bGeneratorObjectActionsDisplay,
+            [bGenerator.ns.NS_FIELDSETS]: this.bGeneratorFieldSets,
+        };
     }
 
     parseColumnItems = (json_config) => {
@@ -653,11 +682,11 @@ class bReportMaker extends bBase {
 
 }
 
-const NS_COUNT_COLUMNS = 'count_columns';
-const NS_FOOTER_EXPR = 'footer_expr';
-const NS_PAGE_SUM_DATA = 'page_sum_data';
-const NS_DATA_FORMAT = 'data_format';
-const NS_DATA_EXPR = 'data_expr';
+const NS_COUNT_COLUMNS = 'countColumns';
+const NS_FOOTER_EXPR = 'footerExpr';
+const NS_PAGE_SUM_DATA = 'pageSumData';
+const NS_DATA_FORMAT = 'dataFormat';
+const NS_DATA_EXPR = 'dataExpr';
 
 module.exports = bReportMaker;
 module.exports.ns = {

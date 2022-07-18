@@ -32,7 +32,7 @@ class ReportController {
         const jsonResult = new ReportPrepareJson({
             req,
             configParser: list,
-            title: list.title
+            pageTitle: list.title
         });
 
         return await jsonResult.toArray().then(dt => {
@@ -73,9 +73,7 @@ class ReportController {
             }
         }
 
-
-        const filterItemsToValidationRules = {"default": filterItems};
-        const validationRules = await configParser.prepareFormValidation(req, configParser.bGeneratorFields, filterItemsToValidationRules, null, parent, {}, ns.NS_FILTER);
+        const validationRules = await configParser.prepareFormValidation(req, configParser.bGeneratorFields, filterItems, null, parent, {}, ns.NS_FILTER);
 
         Object.keys(validationRules).map(validationRule => {
             if(typeof input[validationRule] === typeof undefined){
@@ -99,13 +97,21 @@ class ReportController {
         if(isValid){
 
             const defaultRelations = await this.getDefaultRelations(req, "report", parent);
-            const list = await configParser.list(req, parent, defaultRelations);
+            const list = await configParser.report(req, parent, defaultRelations);
 
             // inja bayad apply criteria kone
             // variable ha ro begire
             const filterCriteria = input;
             const sort = this.prepareSort(req.body);
-            const query = this.applyCriteria(req, configParser.bGeneratorFields, filterItems, filterCriteria, sort);
+
+            let flattenFilterItems = [];
+            Object.entries(filterItems).map(fKey => {
+                fKey[1].map(f => {
+                    flattenFilterItems = flattenFilterItems.concat(f);
+                })
+            })
+
+            const query = this.applyCriteria(req, configParser.bGeneratorFields, flattenFilterItems, filterCriteria, sort);
 
             // get columns
             const columns = await this.getColumns(req, configParser);
@@ -199,7 +205,7 @@ class ReportController {
         } else {
 
             const defaultRelations = await this.getDefaultRelations(req, "report", parent);
-            const list = await configParser.list(req, parent, defaultRelations);
+            const list = await configParser.report(req, parent, defaultRelations);
 
             const jsonResult = new ReportPrepareJson({
                 req,
@@ -243,7 +249,7 @@ class ReportController {
 
 
         const defaultRelations = await this.getDefaultRelations(req, "report", parent);
-        return await abstractListConfigParser.list(req, parent, defaultRelations);
+        return await abstractListConfigParser.report(req, parent, defaultRelations);
 
     }
 
