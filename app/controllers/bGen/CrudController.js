@@ -7,7 +7,6 @@ const FormJson = require('./../../json/bgenerator/FormJson');
 
 class CrudController {
 
-    withSkeleton = false;
     user = null;
     config;
     options;
@@ -26,7 +25,6 @@ class CrudController {
     }
 
     getIndex = async (req, res) => {
-        this.withSkeleton = req.body.skeleton || true;
         return await this.fetchList(req, res);
     }
 
@@ -356,7 +354,7 @@ class CrudController {
                 count,
                 page,
                 limit,
-                this.withSkeleton,
+                this.req.body.skeleton || true,
                 [],
                 this.user,
                 list.title,

@@ -54,7 +54,7 @@ class ReportController {
 
         const filterItems = configParser.bGeneratorFilterItems;
 
-        let input = req.body.filter || {};
+        let input = req.body || {};
 
         let parent = null;
         if(this.objectRef){
@@ -111,7 +111,7 @@ class ReportController {
                 })
             })
 
-            const query = this.applyCriteria(req, configParser.bGeneratorFields, flattenFilterItems, filterCriteria, sort);
+            const query = await this.applyCriteria(req, configParser.bGeneratorFields, flattenFilterItems, filterCriteria, sort);
 
             // get columns
             const columns = await this.getColumns(req, configParser);
@@ -266,6 +266,10 @@ class ReportController {
     }
 
     getHeaders = async  (req, configParser) => {
+        return await this.getHeadersAction(req, configParser)
+    }
+
+    getHeadersAction = async  (req, configParser) => {
 
         const items = configParser.bGeneratorListItems;
         const fields = configParser.bGeneratorFields;
@@ -297,6 +301,10 @@ class ReportController {
     }
 
     getDataExpression = async (req, configParser) => {
+        return await this.getDataExpressionAction(req, configParser);
+    }
+
+    getDataExpressionAction = async (req, configParser) => {
 
         const items = configParser.bGeneratorListItems;
         const fields = configParser.bGeneratorFields;
@@ -319,6 +327,10 @@ class ReportController {
     }
 
     getFooterExpression = async (req, configParser) => {
+        return await this.getFooterExpressionAction(req, configParser)
+    }
+
+    getFooterExpressionAction = async (req, configParser) => {
 
         const items = configParser.bGeneratorListItems;
         const fields = configParser.bGeneratorFields;
@@ -342,6 +354,10 @@ class ReportController {
     }
 
     getPageSumData = async (req, configParser) => {
+        return await this.getPageSumDataAction(req, configParser);
+    }
+
+    getPageSumDataAction = async (req, configParser) => {
 
         const items = configParser.bGeneratorListItems;
         const fields = configParser.bGeneratorFields;
@@ -364,6 +380,10 @@ class ReportController {
     }
 
     getDataFormat = async (req, configParser) => {
+        return await this.getDataFormatAction(req, configParser)
+    }
+
+    getDataFormatAction = async (req, configParser) => {
         const items = configParser.bGeneratorListItems;
         const fields = configParser.bGeneratorFields;
 
@@ -404,11 +424,11 @@ class ReportController {
         return null;
     }
 
-    preReport = (req, parent, isValid) => {
+    preReport = async (req, parent, isValid) => {
         return true;
     }
 
-    applyCriteria = (req, bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort) => {
+    applyCriteria = async (req, bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort) => {
         return this.repository.applyCriteria(bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort);
     }
 

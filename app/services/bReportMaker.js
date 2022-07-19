@@ -72,7 +72,7 @@ class bReportMaker extends bBase {
 
     report = async (req, parentItem = null, defaultRelations = null) => {
 
-        await this.fillFormRelations(req, this.bGeneratorFilterItems, parentItem, defaultRelations);
+        await this.fillFormRelations(req, this.bGeneratorFilterItems, null, parentItem, defaultRelations, bGenerator.ns.NS_FILTER);
 
         return {
             bGeneratorOptions: this.bGeneratorOptions,
@@ -166,7 +166,7 @@ class bReportMaker extends bBase {
 
         const offset = (Number(page_number) - 1) * Number(count_per_page);
         const limit = Number(count_per_page);
-        const count_query = JSON.parse(JSON.stringify(query)); // clone query
+        const count_query = query; // clone query
 
         query.attributes = columns;
 
@@ -471,7 +471,7 @@ class bReportMaker extends bBase {
         if(expr){
             if(typeof expr === 'object'){
                 const func = expr.func;
-                const val = expr.db_value ? expr.db_value.replaceAll(".", "_") : null;
+                const val = expr.db_value ? expr.db_value : null;
 
                 switch (func){
                     case "RADIF":
@@ -489,7 +489,7 @@ class bReportMaker extends bBase {
                 }
 
             }else{
-                return data[expr.replaceAll('.', "_")];
+                return data[expr];
             }
         }
 
@@ -528,7 +528,7 @@ class bReportMaker extends bBase {
             const arg = args[i];
 
             if(arg['type'] === 'db_value'){
-                args_value = args_value.concat(data[arg.value.replaceAll('.', "_")]);
+                args_value = args_value.concat(data[arg.value]);
             } else if (arg['type'] === 'const'){
                 args_value = args_value.concat(arg['value']);
             } else if (arg['type'] === 'variable'){
@@ -548,7 +548,7 @@ class bReportMaker extends bBase {
             for(let i = 0; i < dataKeys.length; i++){
                 const data_key = dataKeys[i];
                 const data_value = data[data_key];
-                const _key = data_key.replaceAll('.', "_");
+                const _key = data_key;
                 expr_string = expr_string.replaceAll('['+_key+']', parseInt(data_value));
             }
         }
@@ -559,11 +559,11 @@ class bReportMaker extends bBase {
                 const data_key = varKeys[i];
                 const data_value = variable_result[data_key];
 
-                const _key = data_key.replaceAll('.', "_");
+                const _key = data_key;
                 if(typeof data_value === 'string' && parseFloat(data_value) === 0 && data_value !== "0" && data_value !== "0.0" && data_value !== "0.00"){
                     expr_string = expr_string.replaceAll('{' + _key + '}', data_value, expr_string);
                     isString = true;
-                }else if(data_value.indexOf('.') !== -1){
+                }else if((data_value + "").indexOf('.') !== -1){
                     expr_string = expr_string.replaceAll('{' + _key + '}', parseFloat(data_value));
                 }else{
                     expr_string = expr_string.replaceAll('{' + _key + '}', parseInt(data_value));
@@ -597,7 +597,7 @@ class bReportMaker extends bBase {
                 if(data_value === null){
                     // continue;
                 }else{
-                    const _key = data_key.replaceAll('.', "_");
+                    const _key = data_key;
                     if('{'+_key+'}' === varName){
                         return await data_value[varObject];
                     }
@@ -627,7 +627,7 @@ class bReportMaker extends bBase {
 
     _getExprValue = (expr_string, row_number) => {
 
-        expr_string = expr_string.replaceAll('.', '_');
+        expr_string = expr_string;
 
         if(typeof this.raw_data[row_number] !== 'undefined' && this.raw_data[row_number] !== null){
             const rowKeys = Object.keys(this.raw_data[row_number]);

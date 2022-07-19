@@ -1057,7 +1057,7 @@ class bGenerator {
 
     }
 
-    fillFormRelations = async (req, formItems, item = null, parentItem = null, defaultRelations = null) => {
+    fillFormRelations = async (req, formItems, item = null, parentItem = null, defaultRelations = null, formType = NS_FORM) => {
 
         const formItemsKeys = Object.keys(formItems);
         for(let pp = 0; pp < formItemsKeys.length; pp++){
@@ -1068,8 +1068,8 @@ class bGenerator {
             for(let uu = 0; uu < formFieldSet.length; uu++){
                 const fieldName = formFieldSet[uu];
                 const field = this.bGeneratorFields[fieldName];
-                if(field[NS_FORM]){
-                    const form = field[NS_FORM];
+                if(field[formType]){
+                    const form = field[formType];
                     if(form[NS_DATA_PROVIDER]){
                         const dataProvider = form[NS_DATA_PROVIDER];
                         const validation = form[NS_VALIDATION];
@@ -1081,7 +1081,7 @@ class bGenerator {
                         if(multiple === false && form[NS_PLACEHOLDER]){
                             isRequired = form[NS_PLACEHOLDER];
                         }
-                        this.bGeneratorFields[fieldName][NS_FORM][NS_CHOICES] = await this.loadFormFilterRelationFromDB(req, dataProvider, fieldName, model, method, isRequired, item, parentItem, defaultRelations);
+                        this.bGeneratorFields[fieldName][formType][NS_CHOICES] = await this.loadFormFilterRelationFromDB(req, dataProvider, fieldName, model, method, isRequired, item, parentItem, defaultRelations);
                     }
                 }
             }
