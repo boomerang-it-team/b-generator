@@ -113,34 +113,36 @@ class ReportController {
 
             const query = await this.applyCriteria(req, configParser.bGeneratorFields, flattenFilterItems, filterCriteria, sort);
 
+            const isExport = req.body.export === 'excel' || req.query.export === 'excel';
+
             // get columns
-            const columns = await this.getColumns(req, configParser);
+            const columns = await this.getColumns(req, configParser, isExport);
 
             // get header
-            const headers = await this.getHeaders(req, configParser);
+            const headers = await this.getHeaders(req, configParser, isExport);
 
             // get variables
-            const variables = await this.getVariables(req);
+            const variables = await this.getVariables(req, isExport);
 
             // get dataExpr
-            const dataExpression = await this.getDataExpression(req, configParser);
+            const dataExpression = await this.getDataExpression(req, configParser, isExport);
 
             // get footerExpression
-            const footerExpression = await this.getFooterExpression(req, configParser);
+            const footerExpression = await this.getFooterExpression(req, configParser, isExport);
 
             // get pageSumData
-            const pageSumData = await this.getPageSumData(req, configParser);
+            const pageSumData = await this.getPageSumData(req, configParser, isExport);
 
             // getDataFormat
-            const dataFormat = await this.getDataFormat(req, configParser);
+            const dataFormat = await this.getDataFormat(req, configParser, isExport);
 
             // getCountColumns
-            const countColumns = await this.getCountColumns(req, configParser);
+            const countColumns = await this.getCountColumns(req, configParser, isExport);
 
             const page = req.body.page || 1;
             const limit = configParser.bGeneratorPerPage;
 
-            if(req.body.export === 'excel' || req.query.export === 'excel'){
+            if(isExport){
 
                 const extraHeading = await this.getExtraHeading(req, configParser);
                 const verbose = this.getVerbose(req);
@@ -261,17 +263,17 @@ class ReportController {
         return true;
     }
 
-    getColumns = async  (req, configParser) => {
+    getColumns = async  (req, configParser, isExport = false) => {
         return configParser.bGeneratorColumnItems;
     }
 
-    getHeaders = async  (req, configParser) => {
-        return await this.getHeadersAction(req, configParser)
+    getHeaders = async  (req, configParser, isExport = false) => {
+        return await this.getHeadersAction(req, configParser, isExport)
     }
 
-    getHeadersAction = async  (req, configParser) => {
+    getHeadersAction = async  (req, configParser, isExport = false) => {
 
-        const items = configParser.bGeneratorListItems;
+        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -296,17 +298,17 @@ class ReportController {
 
     }
 
-    getVariables = async  (req) => {
+    getVariables = async  (req, isExport = false) => {
         return {};
     }
 
-    getDataExpression = async (req, configParser) => {
-        return await this.getDataExpressionAction(req, configParser);
+    getDataExpression = async (req, configParser, isExport = false) => {
+        return await this.getDataExpressionAction(req, configParser, isExport);
     }
 
-    getDataExpressionAction = async (req, configParser) => {
+    getDataExpressionAction = async (req, configParser, isExport = false) => {
 
-        const items = configParser.bGeneratorListItems;
+        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -326,13 +328,13 @@ class ReportController {
         return resItems;
     }
 
-    getFooterExpression = async (req, configParser) => {
-        return await this.getFooterExpressionAction(req, configParser)
+    getFooterExpression = async (req, configParser, isExport = false) => {
+        return await this.getFooterExpressionAction(req, configParser, isExport)
     }
 
-    getFooterExpressionAction = async (req, configParser) => {
+    getFooterExpressionAction = async (req, configParser, isExport = false) => {
 
-        const items = configParser.bGeneratorListItems;
+        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -353,13 +355,13 @@ class ReportController {
 
     }
 
-    getPageSumData = async (req, configParser) => {
-        return await this.getPageSumDataAction(req, configParser);
+    getPageSumData = async (req, configParser, isExport = false) => {
+        return await this.getPageSumDataAction(req, configParser, isExport);
     }
 
-    getPageSumDataAction = async (req, configParser) => {
+    getPageSumDataAction = async (req, configParser, isExport = false) => {
 
-        const items = configParser.bGeneratorListItems;
+        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -379,12 +381,12 @@ class ReportController {
         return resItems;
     }
 
-    getDataFormat = async (req, configParser) => {
-        return await this.getDataFormatAction(req, configParser)
+    getDataFormat = async (req, configParser, isExport = false) => {
+        return await this.getDataFormatAction(req, configParser, isExport)
     }
 
-    getDataFormatAction = async (req, configParser) => {
-        const items = configParser.bGeneratorListItems;
+    getDataFormatAction = async (req, configParser, isExport = false) => {
+        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -404,7 +406,7 @@ class ReportController {
         return resItems;
     }
 
-    getCountColumns = async (req, configParser) => {
+    getCountColumns = async (req, configParser, isExport = false) => {
         return configParser.bGeneratorCountColumnItems;
     }
 
