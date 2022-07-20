@@ -560,7 +560,7 @@ class bReportMaker extends bBase {
                 const data_value = variable_result[data_key];
 
                 const _key = data_key;
-                if(typeof data_value === 'string' && parseFloat(data_value) === 0 && data_value !== "0" && data_value !== "0.0" && data_value !== "0.00"){
+                if(typeof data_value === 'string' && isNaN(data_value)){
                     expr_string = expr_string.replaceAll('{' + _key + '}', data_value, expr_string);
                     isString = true;
                 }else if((data_value + "").indexOf('.') !== -1){
