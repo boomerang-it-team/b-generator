@@ -273,7 +273,7 @@ class ReportController {
 
     getHeadersAction = async  (req, configParser, isExport = false) => {
 
-        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
+        const items = !isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -308,7 +308,7 @@ class ReportController {
 
     getDataExpressionAction = async (req, configParser, isExport = false) => {
 
-        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
+        const items = !isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -334,7 +334,7 @@ class ReportController {
 
     getFooterExpressionAction = async (req, configParser, isExport = false) => {
 
-        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
+        const items = !isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -361,7 +361,7 @@ class ReportController {
 
     getPageSumDataAction = async (req, configParser, isExport = false) => {
 
-        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
+        const items = !isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
@@ -386,7 +386,7 @@ class ReportController {
     }
 
     getDataFormatAction = async (req, configParser, isExport = false) => {
-        const items = isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
+        const items = !isExport ? configParser.bGeneratorListItems : configParser.bGeneratorExcelItems;
         const fields = configParser.bGeneratorFields;
 
         let resItems = [];
