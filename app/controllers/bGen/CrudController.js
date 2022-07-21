@@ -354,7 +354,7 @@ class CrudController {
                 count,
                 page,
                 limit,
-                this.req.body.skeleton || true,
+                req.body.skeleton || true,
                 [],
                 this.user,
                 list.title,
