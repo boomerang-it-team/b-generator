@@ -1070,7 +1070,7 @@ class bGenerator {
                 const field = this.bGeneratorFields[fieldName];
                 if(field[formType]){
                     const form = field[formType];
-                    if(form[NS_DATA_PROVIDER]){
+                    if(form[NS_DATA_PROVIDER] || (defaultRelations && defaultRelations[fieldName])){
                         const dataProvider = form[NS_DATA_PROVIDER];
                         const validation = form[NS_VALIDATION];
                         const multiple = form[NS_MULTIPLE] ? form[NS_MULTIPLE] : false;
@@ -1098,7 +1098,7 @@ class bGenerator {
 
             if(field[NS_FILTER]){
                 const form = field[NS_FILTER];
-                if(form[NS_DATA_PROVIDER]){
+                if(form[NS_DATA_PROVIDER] || (defaultRelations && defaultRelations[fieldName])){
                     const dataProvider = form[NS_DATA_PROVIDER];
                     const validation = form[NS_VALIDATION];
                     const multiple = form[NS_MULTIPLE] ? form[NS_MULTIPLE] : false;
