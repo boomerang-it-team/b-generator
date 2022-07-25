@@ -181,7 +181,7 @@ class BaseJson {
 
     }
 
-    defaultValuesToJson = async (fields, fieldSets, item, input, errors) => {
+    defaultValuesToJson = async (fields, fieldSets, item, input, errors, formType = ns.NS_FORM) => {
 
         let res = {};
         const fieldSetsKeys = Object.keys(fieldSets);
@@ -203,7 +203,7 @@ class BaseJson {
                     }
                 }
 
-                if(fields[key][ns.NS_FORM] && fields[key][ns.NS_FORM][ns.NS_TYPE] !== 'password'){
+                if(fields[key][formType] && fields[key][formType][ns.NS_TYPE] !== 'password'){
                     if((errors == null) && !haveInput){
                         if(item != null && typeof data !== 'undefined' && data !== null){
                             const relat = data;

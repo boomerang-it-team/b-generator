@@ -218,7 +218,7 @@ class ReportController {
             });
 
             return await jsonResult.toArray().then(dt => {
-                return jsonResponse.send(res, dt);
+                return jsonResponse.send(res, dt, (req.i18n ? req.i18n.t("common:response.errors.validation") : "There is a problem during sending form."), 422);
             })
 
         }

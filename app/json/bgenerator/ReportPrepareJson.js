@@ -56,6 +56,19 @@ class ReportPrepareJson extends BaseJson {
         res.title = this.pageTitle + "";
         res.actionName = 'list';
 
+        let errors = null;
+        let input = [];
+        if(this.options['errors']){
+            errors = this.options['errors'];
+        }
+
+        if(this.options['input']){
+            input = this.options['input'];
+        }
+
+        res.defaultValues = await this.defaultValuesToJson(this.options.configParser[ns.NS_FIELDS], this.options.configParser[ns.NS_FILTER], null, input, errors, ns.NS_FILTER);
+        res.errors = this.errorsToJson(this.options.configParser[ns.NS_FILTER], errors);
+
         return res;
 
     }
