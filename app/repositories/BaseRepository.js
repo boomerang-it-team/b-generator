@@ -108,6 +108,10 @@ class BaseRepository {
         return this.model.findOne(params);
     }
 
+    count = params => {
+        return this.model.count(params);
+    }
+
 }
 
 module.exports = BaseRepository;
