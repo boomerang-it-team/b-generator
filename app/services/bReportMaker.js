@@ -561,12 +561,16 @@ class bReportMaker extends bBase {
 
                 const _key = data_key;
                 if(typeof data_value === 'string' && isNaN(data_value)){
-                    expr_string = expr_string.replaceAll('{' + _key + '}', data_value, expr_string);
+                    expr_string = expr_string.replaceAll('{' + _key + '}', data_value);
                     isString = true;
                 }else if((data_value + "").indexOf('.') !== -1){
                     expr_string = expr_string.replaceAll('{' + _key + '}', parseFloat(data_value));
                 }else{
-                    expr_string = expr_string.replaceAll('{' + _key + '}', parseInt(data_value));
+                    if(isNaN(parseInt(data_value))){
+                        expr_string = expr_string.replaceAll('{' + _key + '}', data_value);
+                    }else{
+                        expr_string = expr_string.replaceAll('{' + _key + '}', parseInt(data_value));
+                    }
                 }
 
             }

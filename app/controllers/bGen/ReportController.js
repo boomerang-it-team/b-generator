@@ -111,7 +111,7 @@ class ReportController {
                 })
             })
 
-            const query = await this.applyCriteria(req, configParser.bGeneratorFields, flattenFilterItems, filterCriteria, sort);
+            const query = await this.applyCriteria(req, configParser, flattenFilterItems, filterCriteria, sort);
 
             const isExport = req.body.export === 'excel' || req.query.export === 'excel';
 
@@ -430,8 +430,8 @@ class ReportController {
         return true;
     }
 
-    applyCriteria = async (req, bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort) => {
-        return this.repository.applyCriteria(bGeneratorFields, bGeneratorFilterItems, filterCriteria, sort);
+    applyCriteria = async (req, configParser, bGeneratorFilterItems, filterCriteria, sort) => {
+        return this.repository.applyCriteria(configParser, bGeneratorFilterItems, filterCriteria, sort);
     }
 
     prepareSort = filterCriteria => {
