@@ -1083,6 +1083,12 @@ class bGenerator {
                         }
                         this.bGeneratorFields[fieldName][formType][NS_CHOICES] = await this.loadFormFilterRelationFromDB(req, dataProvider, fieldName, model, method, isRequired, item, parentItem, defaultRelations);
                     }
+
+                    if(form[NS_CAN_CHANGE] === false){
+
+                    } else if(typeof(form[NS_CAN_CHANGE]) !== 'undefined' && form[NS_CAN_CHANGE] !== true && item !== null){
+                        this.bGeneratorFields[fieldName][formType][NS_CAN_CHANGE] = !!item[form[NS_CAN_CHANGE]];
+                    }
                 }
             }
 
@@ -1212,6 +1218,8 @@ class bGenerator {
                     const form = field[formType];
 
                     if(form[NS_CAN_CHANGE] === false){
+                        continue;
+                    } else if(typeof(form[NS_CAN_CHANGE]) !== 'undefined' && form[NS_CAN_CHANGE] !== true && item !== null && item[form[NS_CAN_CHANGE]] === false){
                         continue;
                     }
 

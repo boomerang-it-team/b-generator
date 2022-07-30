@@ -342,9 +342,9 @@ class CrudController {
             items = rs.rows;
             count = rs.count;
 
-            items = await abstractListConfigParser.fillListRelations(req, items, abstractListConfigParser.bGeneratorListItems, parent)
-
             items = await this.postFetchList(req, items);
+
+            items = await abstractListConfigParser.fillListRelations(req, items, abstractListConfigParser.bGeneratorListItems, parent)
 
             const jsonResult = new ListJson(
                 req,
