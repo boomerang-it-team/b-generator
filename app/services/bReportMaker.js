@@ -193,8 +193,24 @@ class bReportMaker extends bBase {
         const data_arr = await model.findAll(query);
         let result_data = [];
 
-        this.raw_data = data_arr;
-
+        this.raw_data = data_arr.map(x => {
+            let keys = Object.keys(x);
+            keys.map(k => {
+                if(columns.filter(c => {
+                    if(Array.isArray(c)) {
+                        return k === c[1];
+                    } else if(typeof c === "object"){
+                        return c.val.toLowerCase().indexOf('as ' + k.toLowerCase()) !== -1;
+                    }else{
+                        return k === c;
+                    }
+                }).length === 0){
+                    delete x[k];
+                }
+            })
+            return x;
+        });
+        
         for(let i = 0; i < data_arr.length; i++){
 
             const data = data_arr[i];
@@ -226,6 +242,7 @@ class bReportMaker extends bBase {
 
         result['footer_data'] = footer_data;
         result['raw_data'] = this.raw_data;
+        result['var_data'] = this.variable_data
         return result;
 
     }
@@ -532,7 +549,7 @@ class bReportMaker extends bBase {
             } else if (arg['type'] === 'const'){
                 args_value = args_value.concat(arg['value']);
             } else if (arg['type'] === 'variable'){
-                args_value = await args_value.concat(this.computeVariableObject(data, variable_result, arg['value']));
+                args_value = args_value.concat(await this.computeVariableObject(data, variable_result, arg['value']));
             }
         }
 
@@ -603,7 +620,7 @@ class bReportMaker extends bBase {
                 }else{
                     const _key = data_key;
                     if('{'+_key+'}' === varName){
-                        return await data_value[varObject];
+                        return await data_value;
                     }
                 }
             }
