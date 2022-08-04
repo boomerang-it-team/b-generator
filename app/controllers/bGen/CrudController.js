@@ -357,7 +357,7 @@ class CrudController {
                 req.body.skeleton || true,
                 [],
                 this.user,
-                list.title,
+                req.i18n ? req.i18n.t(list.title + "") : list.title,
                 null
             );
 

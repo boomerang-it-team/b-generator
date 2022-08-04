@@ -32,7 +32,7 @@ class ReportController {
         const jsonResult = new ReportPrepareJson({
             req,
             configParser: list,
-            pageTitle: list.title
+            pageTitle: req.i18n ? req.i18n.t(list.title + "") : list.title
         });
 
         return await jsonResult.toArray().then(dt => {
@@ -167,7 +167,7 @@ class ReportController {
                     pageSumData,
                     hasSumPage,
                     hasFooter,
-                    list.title,
+                    req.i18n ? req.i18n.t(list.title + "") : list.title,
                     extraHeading,
                     "web",
                     verbose
