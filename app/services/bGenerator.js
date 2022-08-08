@@ -318,35 +318,39 @@ class bGenerator {
 
     }
 
-    parseTableFields = async (json_config_fields) => {
+    parseTableFields = async (json_config_fields, checkDatabase = true) => {
 
-        const columns = await this.bGeneratorOptions.sequelize.query('SHOW COLUMNS FROM ' + this.bGeneratorModel.tableName);
-        const columnStructures = await this.bGeneratorOptions.sequelize.query('SHOW FIELDS FROM ' + this.bGeneratorModel.tableName);
+        if(checkDatabase){
 
-        columns[0].map(cl => {
+            const columns = await this.bGeneratorOptions.sequelize.query('SHOW COLUMNS FROM ' + this.bGeneratorModel.tableName);
+            const columnStructures = await this.bGeneratorOptions.sequelize.query('SHOW FIELDS FROM ' + this.bGeneratorModel.tableName);
 
-            const column = cl['Field'];
+            columns[0].map(cl => {
 
-            this.bGeneratorFields[column] = {};
-            this.bGeneratorFields[column][NS_LABEL] = column;
-            this.bGeneratorFields[column][NS_IN_INDEX] = true;
-            this.bGeneratorFields[column][NS_IN_FORM] = true;
-            this.bGeneratorFields[column][NS_SOTRABLE] = true;
+                const column = cl['Field'];
 
-            if(column === 'id'){
-                this.bGeneratorFields[column][NS_PRIMARY] = true;
-            }
+                this.bGeneratorFields[column] = {};
+                this.bGeneratorFields[column][NS_LABEL] = column;
+                this.bGeneratorFields[column][NS_IN_INDEX] = true;
+                this.bGeneratorFields[column][NS_IN_FORM] = true;
+                this.bGeneratorFields[column][NS_SOTRABLE] = true;
 
-            if(column === 'created_at' || column === 'updated_at' || column === 'deleted_at' || column === 'id'){
-                this.bGeneratorFields[column][NS_FILLABLE] = false;
-                this.bGeneratorFields[column][NS_IN_FORM] = false;
-            }
+                if(column === 'id'){
+                    this.bGeneratorFields[column][NS_PRIMARY] = true;
+                }
 
-            // fill form and filter
-            this.buildFieldFormStructure(column, columnStructures[0]);
-            
-        })
-        
+                if(column === 'created_at' || column === 'updated_at' || column === 'deleted_at' || column === 'id'){
+                    this.bGeneratorFields[column][NS_FILLABLE] = false;
+                    this.bGeneratorFields[column][NS_IN_FORM] = false;
+                }
+
+                // fill form and filter
+                this.buildFieldFormStructure(column, columnStructures[0]);
+
+            })
+        }
+
+
         if(json_config_fields && json_config_fields.length > 0){
 
             json_config_fields.map(field => {
@@ -1919,7 +1923,6 @@ const NS_FOOTER_EXPR = 'footerExpr';
 const NS_PAGE_SUM_DATA = 'pageSumData';
 const NS_DATA_FORMAT = 'dataFormat';
 const NS_DATA_EXPR = 'dataExpr';
-
 
 module.exports.bGenerator = bGenerator;
 module.exports.ns = {

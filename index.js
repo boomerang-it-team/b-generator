@@ -8,7 +8,10 @@ const ListJson = require('./app/json/bgenerator/ListJson.js');
 const ReportController = require('./app/controllers/bGen/ReportController.js');
 const CrudController = require('./app/controllers/bGen/CrudController.js');
 const CrudParentController = require('./app/controllers/bGen/CrudParentController.js');
+const bImportExcel = require('./app/services/bImportExcel');
 const bReportMaker = require('./app/services/bReportMaker');
+const ImportController = require('./app/controllers/bGen/ImportController')
+
 const ReportJson = require('./app/json/bgenerator/ReportJson');
 const ReportPrepareJson = require('./app/json/bgenerator/ReportPrepareJson');
 
@@ -18,9 +21,11 @@ const BGenerator = {
     bGenerator: bGenerator.bGenerator,
     ns: bGenerator.ns,
     bReportMaker,
+    bImportExcel,
     ReportJson,
     ReportPrepareJson,
-    ReportController
+    ReportController,
+    ImportController
 }
 
 module.exports = BGenerator;
