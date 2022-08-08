@@ -65,6 +65,21 @@ class bGeneratorRouter {
         });
     }
 
+    import = (router, middlewares, controller, routeName) => {
+
+        router.post('/' +routeName + '/import', middlewares, function(req, res, next) {
+            return controller.import(req, res);
+        });
+
+        router.post('/' +routeName + '/download-sample', middlewares, function(req, res, next) {
+            return controller.downloadSampleData(req, res);
+        });
+
+        router.post('/' + routeName, middlewares, function(req, res, next) {
+            return controller.prepare(req, res);
+        });
+
+    }
 }
 
 module.exports = new bGeneratorRouter();
