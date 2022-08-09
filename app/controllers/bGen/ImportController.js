@@ -64,7 +64,13 @@ class ImportController {
             return jsonResponse.send(res, [], (req.i18n ? req.i18n.t("common:response.errors.access_denied") : "Access Denied"), 403);
         }
 
-        const { from, to, simulate } = req.body;
+        let { from, to, simulate } = req.body;
+
+        if(simulate === "true"){
+            simulate = true;
+        }else{
+            simulate = false;
+        }
 
         let file;
         let filename = null;
@@ -88,7 +94,7 @@ class ImportController {
             simulate: "nullable|boolean",
             file: 'required|in:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.binary.macroEnabled.12,application/vnd.ms-excel'
         };
-        const v = Validator.make({ from, to, simulate: simulate == "true" ? true : false, file: mimetype }, validationRules);
+        const v = Validator.make({ from, to, simulate, file: mimetype }, validationRules);
 
         if(v.fails()){
 
