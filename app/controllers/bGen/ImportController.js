@@ -88,7 +88,7 @@ class ImportController {
             simulate: "nullable|boolean",
             file: 'required|in:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel.sheet.binary.macroEnabled.12,application/vnd.ms-excel'
         };
-        const v = Validator.make({ from, to, simulate: !!simulate, file: mimetype }, validationRules);
+        const v = Validator.make({ from, to, simulate: simulate == "true" ? true : false, file: mimetype }, validationRules);
 
         if(v.fails()){
 
