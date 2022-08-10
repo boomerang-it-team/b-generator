@@ -620,7 +620,11 @@ class bReportMaker extends bBase {
                 }else{
                     const _key = data_key;
                     if('{'+_key+'}' === varName){
-                        return await data_value;
+                        if(varObject){
+                            return await data_value[varObject];
+                        }else{
+                            return await data_value;
+                        }
                     }
                 }
             }
